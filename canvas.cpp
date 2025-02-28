@@ -21,9 +21,6 @@ void CanvasRenderer::initialize(QRhiCommandBuffer *cb) {
     }
 
     if (!m_pipeline) {
-        m_vbuf.reset(m_rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::VertexBuffer, m_vertexDataCapacity*4));
-        m_vbuf->create();
-
         m_srb.reset(m_rhi->newShaderResourceBindings());
         m_srb->create();
 
@@ -46,40 +43,51 @@ void CanvasRenderer::initialize(QRhiCommandBuffer *cb) {
         m_pipeline->setRenderPassDescriptor(renderTarget()->renderPassDescriptor());
         m_pipeline->setTopology(QRhiGraphicsPipeline::LineStrip);
         m_pipeline->create();
-
-        QRhiResourceUpdateBatch *resourceUpdates = m_rhi->nextResourceUpdateBatch();
-        resourceUpdates->updateDynamicBuffer(m_vbuf.get(), 0, 4*m_vertexData.size(), m_vertexData.data());
-        cb->resourceUpdate(resourceUpdates);
     }
 }
 
 void CanvasRenderer::synchronize(QQuickRhiItem *item) {
     Canvas *canvas = static_cast<Canvas*>(item);
 
-    m_vertexData.clear();
+    m_vertexDatas.clear();
 
     if (canvas->m_lines.isEmpty())
         return;
 
-    QList<QPointF> &line = canvas->m_lines.last();
-    for (int j = 0; j < line.size(); j++) {
-        m_vertexData << 2*line[j].x()/canvas->width()-1
-                            << 1-2*line[j].y()/canvas->height()
-                           << double(j)/line.size()
-                          << 1-double(j)/line.size()
+    for (int i = 0; i < canvas->m_lines.size(); i++) {
+        m_vertexDatas.append(QList<float>());
+        QList<QPointF> &line = canvas->m_lines[i];
+        for (int j = 0; j < line.size(); j++) {
+            m_vertexDatas[i] << 2*line[j].x()/canvas->width()-1
+                         << 1-2*line[j].y()/canvas->height()
+                         << double(j)/line.size()
+                         << 1-double(j)/line.size()
                          << 1;
+        }
     }
 
-    if (m_vertexDataCapacity != m_vertexData.capacity()) {
-        m_vertexDataCapacity = m_vertexData.capacity();
-        m_vbuf->setSize(m_vertexDataCapacity*4);
-        m_vbuf->create();
+    for (int i = 0; i < m_vertexDataCapacities.size(); i++) {
+        if (m_vertexDataCapacities[i] != m_vertexDatas[i].capacity()) {
+            m_vertexDataCapacities[i] = m_vertexDatas[i].capacity();
+            m_vbufs[i]->setSize(m_vertexDataCapacities[i]*4);
+            m_vbufs[i]->create();
+        }
+    }
+    for (int i = m_vertexDataCapacities.size(); i < canvas->m_lines.size(); i++) {
+        m_vertexDataCapacities << m_vertexDatas[i].capacity();
+
+        // m_vbufs and m_vertexDataCapacities sizes are linked
+        QRhiBuffer *buf = m_rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::VertexBuffer, m_vertexDataCapacities[i]*4);
+        buf->create();
+        m_vbufs << std::shared_ptr<QRhiBuffer>(buf);
     }
 
     if (!m_updateBatch)
         m_updateBatch = m_rhi->nextResourceUpdateBatch();
 
-    m_updateBatch->updateDynamicBuffer(m_vbuf.get(), 0, m_vertexDataCapacity*4, m_vertexData.data());
+    for (int i = 0; i < m_vbufs.size(); i++) {
+        m_updateBatch->updateDynamicBuffer(m_vbufs[i].get(), 0, m_vertexDataCapacities[i]*4, m_vertexDatas[i].data());
+    }
 }
 
 void CanvasRenderer::render(QRhiCommandBuffer *cb) {
@@ -90,10 +98,12 @@ void CanvasRenderer::render(QRhiCommandBuffer *cb) {
 
     cb->setGraphicsPipeline(m_pipeline.get());
 
-    const QRhiCommandBuffer::VertexInput vbufBinding(m_vbuf.get(), 0);
-    cb->setVertexInput(0, 1, &vbufBinding);
+    for (int i = 0; i < m_vbufs.size(); i++) {
+        const QRhiCommandBuffer::VertexInput vbufBinding(m_vbufs[i].get(), 0);
+        cb->setVertexInput(0, 1, &vbufBinding);
 
-    cb->draw(m_vertexData.size()/5);
+        cb->draw(m_vertexDatas[i].size()/5);
+    }
 
     cb->endPass();
 }

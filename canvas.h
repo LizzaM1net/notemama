@@ -20,14 +20,14 @@ protected:
 private:
     QRhi *m_rhi;
 
-    QList<float> m_vertexData;
-    int m_vertexDataCapacity = 0;
+    QList<QList<float>> m_vertexDatas;
+    QList<int> m_vertexDataCapacities;
 
     QRhiResourceUpdateBatch *m_updateBatch = nullptr;
 
     std::unique_ptr<QRhiGraphicsPipeline> m_pipeline;
     std::unique_ptr<QRhiShaderResourceBindings> m_srb;
-    std::unique_ptr<QRhiBuffer> m_vbuf;
+    QList<std::shared_ptr<QRhiBuffer>> m_vbufs;
 };
 
 class Canvas : public QQuickRhiItem {
