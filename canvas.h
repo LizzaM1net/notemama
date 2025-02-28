@@ -8,6 +8,12 @@ class QRhiGraphicsPipeline;
 class QRhiShaderResourceBindings;
 class QRhiResourceUpdateBatch;
 
+struct LineUpdate {
+    int index;
+    int updateStart;
+    int updateEnd;
+};
+
 class CanvasRenderer : public QQuickRhiItemRenderer {
 public:
     CanvasRenderer();
@@ -21,7 +27,6 @@ private:
     QRhi *m_rhi;
 
     QList<QList<float>> m_vertexDatas;
-    QList<int> m_vertexDataCapacities;
 
     QRhiResourceUpdateBatch *m_updateBatch = nullptr;
 
@@ -48,6 +53,7 @@ protected:
 
 private:
     QList<QList<QPointF>> m_lines;
+    QList<LineUpdate> m_lineUpdates;
 
     bool m_pressed = false;
 };
