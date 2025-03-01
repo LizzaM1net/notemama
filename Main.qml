@@ -8,6 +8,12 @@ Window {
     title: qsTr("Hello World")
 
     NoteMama.Canvas {
+        id: canvas
+
         anchors.fill: parent
+    }
+
+    Text {
+        text: "Drawn in " + (canvas.lastCompletedTime*1000).toFixed(5) + " μs"
     }
 }

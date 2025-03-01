@@ -8,6 +8,8 @@ class QRhiGraphicsPipeline;
 class QRhiShaderResourceBindings;
 class QRhiResourceUpdateBatch;
 
+class Canvas;
+
 struct LineUpdate {
     int index;
     int updateStart;
@@ -16,7 +18,7 @@ struct LineUpdate {
 
 class CanvasRenderer : public QQuickRhiItemRenderer {
 public:
-    CanvasRenderer();
+    CanvasRenderer(Canvas *item);
 
 protected:
     void initialize(QRhiCommandBuffer *cb);
@@ -24,7 +26,9 @@ protected:
     void render(QRhiCommandBuffer *cb);
 
 private:
-    QRhi *m_rhi;
+    Canvas *m_item = nullptr;
+
+    QRhi *m_rhi = nullptr;
 
     QList<QList<float>> m_vertexDatas;
 
@@ -39,10 +43,20 @@ class Canvas : public QQuickRhiItem {
     Q_OBJECT
     QML_ELEMENT
 
+    Q_PROPERTY(double lastCompletedTime READ lastCompletedTime WRITE setLastCompletedTime NOTIFY lastCompletedTimeChanged FINAL)
+
     friend class CanvasRenderer;
 
 public:
     Canvas();
+
+    double lastCompletedTime() const;
+
+signals:
+    void lastCompletedTimeChanged();
+
+private slots:
+    void setLastCompletedTime(double newLastCompletedTime);
 
 protected:
     QQuickRhiItemRenderer *createRenderer();
@@ -56,6 +70,8 @@ private:
     QList<LineUpdate> m_lineUpdates;
 
     bool m_pressed = false;
+
+    double m_lastCompletedTime = 0;
 };
 
 #endif // CANVAS_H

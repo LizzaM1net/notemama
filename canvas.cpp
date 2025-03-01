@@ -6,8 +6,9 @@
 
 #include <iostream>
 
-CanvasRenderer::CanvasRenderer() {
-}
+CanvasRenderer::CanvasRenderer(Canvas *item)
+    : QQuickRhiItemRenderer()
+    , m_item(item) {}
 
 static QShader getShader(const QString &name)
 {
@@ -94,6 +95,8 @@ void CanvasRenderer::render(QRhiCommandBuffer *cb) {
     if (m_updateBatch)
         m_updateBatch = nullptr;
 
+    QMetaObject::invokeMethod(m_item, &Canvas::setLastCompletedTime, Qt::QueuedConnection, cb->lastCompletedGpuTime());
+
     cb->setGraphicsPipeline(m_pipeline.get());
 
     for (int i = 0; i < m_vbufs.size(); i++) {
@@ -106,12 +109,13 @@ void CanvasRenderer::render(QRhiCommandBuffer *cb) {
     cb->endPass();
 }
 
-Canvas::Canvas() {
+Canvas::Canvas()
+    : QQuickRhiItem() {
     setAcceptedMouseButtons(Qt::AllButtons);
 }
 
 QQuickRhiItemRenderer *Canvas::createRenderer() {
-    return new CanvasRenderer();
+    return new CanvasRenderer(this);
 }
 
 void Canvas::mousePressEvent(QMouseEvent *event) {
@@ -130,4 +134,18 @@ void Canvas::mouseMoveEvent(QMouseEvent *event) {
 
 void Canvas::mouseReleaseEvent(QMouseEvent *event) {
     m_pressed = false;
+}
+
+double Canvas::lastCompletedTime() const
+{
+    return m_lastCompletedTime;
+}
+
+void Canvas::setLastCompletedTime(double newLastCompletedTime)
+{
+    if (qFuzzyCompare(m_lastCompletedTime, newLastCompletedTime))
+        return;
+
+    m_lastCompletedTime = newLastCompletedTime;
+    emit lastCompletedTimeChanged();
 }
