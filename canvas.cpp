@@ -2,7 +2,6 @@
 
 #include <QFile>
 #include <QtMath>
-#include <rhi/qrhi.h>
 
 #include <iostream>
 
@@ -112,6 +111,9 @@ void CanvasRenderer::render(QRhiCommandBuffer *cb) {
 Canvas::Canvas()
     : QQuickRhiItem() {
     setAcceptedMouseButtons(Qt::AllButtons);
+
+    connect(this, &QQuickItem::windowChanged,
+            this, &Canvas::windowChanged);
 }
 
 QQuickRhiItemRenderer *Canvas::createRenderer() {
@@ -148,4 +150,40 @@ void Canvas::setLastCompletedTime(double newLastCompletedTime)
 
     m_lastCompletedTime = newLastCompletedTime;
     emit lastCompletedTimeChanged();
+}
+
+QString Canvas::graphicsApi() const
+{
+    switch (m_graphicsApi) {
+    case QSGRendererInterface::OpenGL:
+        return "OpenGL";
+        break;
+    case QSGRendererInterface::Direct3D11:
+        return "D3D11";
+        break;
+    case QSGRendererInterface::Direct3D12:
+        return "D3D12";
+        break;
+    case QSGRendererInterface::Vulkan:
+        return "Vulkan";
+        break;
+    case QSGRendererInterface::Metal:
+        return "Metal";
+        break;
+    default:
+        return "Unknown 3D API";
+        break;
+    }
+}
+
+void Canvas::windowChanged(QQuickWindow *window)
+{
+    if (!window)
+        return;
+
+    QSGRendererInterface::GraphicsApi api = window->rendererInterface()->graphicsApi();
+    if (api != m_graphicsApi) {
+        m_graphicsApi = api;
+        emit graphicsApiChanged();
+    }
 }

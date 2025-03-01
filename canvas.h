@@ -2,11 +2,9 @@
 #define CANVAS_H
 
 #include <QQuickRhiItem>
-
-class QRhiBuffer;
-class QRhiGraphicsPipeline;
-class QRhiShaderResourceBindings;
-class QRhiResourceUpdateBatch;
+#include <QSGRendererInterface>
+#include <rhi/qrhi.h>
+#include <QQuickWindow>
 
 class Canvas;
 
@@ -43,7 +41,8 @@ class Canvas : public QQuickRhiItem {
     Q_OBJECT
     QML_ELEMENT
 
-    Q_PROPERTY(double lastCompletedTime READ lastCompletedTime WRITE setLastCompletedTime NOTIFY lastCompletedTimeChanged FINAL)
+    Q_PROPERTY(double lastCompletedTime READ lastCompletedTime NOTIFY lastCompletedTimeChanged FINAL)
+    Q_PROPERTY(QString graphicsApi READ graphicsApi NOTIFY graphicsApiChanged FINAL)
 
     friend class CanvasRenderer;
 
@@ -52,11 +51,17 @@ public:
 
     double lastCompletedTime() const;
 
+    QString graphicsApi() const;
+
 signals:
     void lastCompletedTimeChanged();
 
+    void graphicsApiChanged();
+
 private slots:
     void setLastCompletedTime(double newLastCompletedTime);
+
+    void windowChanged(QQuickWindow *window);
 
 protected:
     QQuickRhiItemRenderer *createRenderer();
@@ -72,6 +77,8 @@ private:
     bool m_pressed = false;
 
     double m_lastCompletedTime = 0;
+
+    QSGRendererInterface::GraphicsApi m_graphicsApi = QSGRendererInterface::GraphicsApi::Null;
 };
 
 #endif // CANVAS_H

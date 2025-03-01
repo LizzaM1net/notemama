@@ -13,7 +13,12 @@ Window {
         anchors.fill: parent
     }
 
-    Text {
-        text: "Drawn in " + (canvas.lastCompletedTime*1000).toFixed(5) + " μs"
+    Column {
+        Text {
+            text: "Drawn in " + (canvas.lastCompletedTime*1000).toFixed(5) + " μs"
+        }
+        Text {
+            text: "Graphics api: " + canvas.graphicsApi
+        }
     }
 }
