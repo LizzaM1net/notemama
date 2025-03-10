@@ -17,7 +17,8 @@ qt_add_qml_module(appNoteMama
     VERSION 1.0
     QML_FILES
         Main.qml
-        SOURCES canvas.h canvas.cpp
+    SOURCES canvas.h canvas.cpp
+    SOURCES svgparser.h svgparser.cpp
 )
 
 qt_add_shaders(appNoteMama "appNoteMama_shaders"
