@@ -7,6 +7,8 @@
 
 class QRhiBuffer;
 class QRhiResourceUpdateBatch;
+class QRhiCommandBuffer;
+class QRhi;
 
 struct ColorVector2D {
     ColorVector2D(QVector2D point, float red, float green, float blue)
@@ -35,7 +37,7 @@ struct ColorVector2D {
 
 namespace VectorPath {
     struct Segment {
-        virtual QList<ColorVector2D> render(QVector2D startPoint) const = 0;
+        virtual QList<ColorVector2D> generateVertices(QVector2D startPoint) const = 0;
         virtual QVector2D lastPoint(QVector2D startPoint) const = 0;
 
         virtual QVector2D inTangent() const = 0;
@@ -45,7 +47,7 @@ namespace VectorPath {
     struct LineSegment : public Segment {
         LineSegment(QVector2D relEnd);
 
-        QList<ColorVector2D> render(QVector2D startPoint) const override;
+        QList<ColorVector2D> generateVertices(QVector2D startPoint) const override;
         QVector2D lastPoint(QVector2D startPoint) const override;
 
         QVector2D inTangent() const override;
@@ -57,7 +59,7 @@ namespace VectorPath {
     struct QuadCurveSegment : public Segment {
         QuadCurveSegment(QVector2D relB, QVector2D relC);
 
-        QList<ColorVector2D> render(QVector2D startPoint) const override;
+        QList<ColorVector2D> generateVertices(QVector2D startPoint) const override;
         QVector2D lastPoint(QVector2D startPoint) const override;
 
         QVector2D inTangent() const override;
@@ -69,7 +71,7 @@ namespace VectorPath {
     struct CubicCurveSegment : public Segment {
         CubicCurveSegment(QVector2D relB, QVector2D relC, QVector2D relD);
 
-        QList<ColorVector2D> render(QVector2D startPoint) const override;
+        QList<ColorVector2D> generateVertices(QVector2D startPoint) const override;
         QVector2D lastPoint(QVector2D startPoint) const override;
 
         QVector2D inTangent() const override;
@@ -84,7 +86,8 @@ struct VectorPathCanvasItem
     VectorPathCanvasItem(QVector2D startPoint, QList<VectorPath::Segment*> segments);
     ~VectorPathCanvasItem();
 
-    void synchronize(QRhiBuffer *buffer, QRhiResourceUpdateBatch *updateBatch);
+    void synchronize(QRhi *rhi, QRhiResourceUpdateBatch *updateBatch);
+    void render(QRhiCommandBuffer *cb);
 
     QVector2D startPoint;
     QList<VectorPath::Segment*> segments;
@@ -92,7 +95,10 @@ struct VectorPathCanvasItem
     bool changed = true;
 
 private:
-    QList<ColorVector2D> render();
+    QList<ColorVector2D> generateVertices();
+
+    QRhiBuffer *m_buffer = nullptr;
+    int m_verticesCount = 0;
 };
 
 #endif // VECTORPATHCANVASITEM_H

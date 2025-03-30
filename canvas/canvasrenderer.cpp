@@ -77,16 +77,8 @@ void CanvasRenderer::synchronize(QQuickRhiItem *item) {
     if (!m_updateBatch)
         m_updateBatch = m_rhi->nextResourceUpdateBatch();
 
-    for (int i = 0; i < m_vbufs.size(); i++) {
-        canvas->m_items[i]->synchronize(m_vbufs[i].get(), m_updateBatch);
-    }
-
-    for (int i = m_vbufs.size(); i < canvas->m_items.size(); i++) {
-        // Buffer will be later resized by renderNew
-        QRhiBuffer *buf = m_rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::VertexBuffer, 0);
-        m_vbufs << std::shared_ptr<QRhiBuffer>(buf);
-
-        canvas->m_items[i]->synchronize(m_vbufs[i].get(), m_updateBatch);
+    for (int i = 0; i < m_item->m_items.size(); i++) {
+        m_item->m_items[i]->synchronize(m_rhi, m_updateBatch);
     }
 }
 
@@ -101,12 +93,8 @@ void CanvasRenderer::render(QRhiCommandBuffer *cb) {
     cb->setGraphicsPipeline(m_pipeline.get());
     cb->setShaderResources();
 
-    for (int i = 0; i < m_vbufs.size(); i++) {
-        const QRhiCommandBuffer::VertexInput vbufBinding(m_vbufs[i].get(), 0);
-        cb->setVertexInput(0, 1, &vbufBinding);
-
-        // cb->draw(m_itemSizes[i]);
-        cb->draw(m_vbufs[i]->size()/5/sizeof(float));
+    for (int i = 0; i < m_item->m_items.size(); i++) {
+        m_item->m_items[i]->render(cb);
     }
 
     cb->endPass();

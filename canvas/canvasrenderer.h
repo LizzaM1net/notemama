@@ -25,7 +25,6 @@ private:
 
     std::unique_ptr<QRhiGraphicsPipeline> m_pipeline;
     std::unique_ptr<QRhiShaderResourceBindings> m_srb;
-    QList<std::shared_ptr<QRhiBuffer>> m_vbufs;
     QList<int> m_itemSizes;
 
     QMatrix4x4 m_transformMatrix;
