@@ -1,8 +1,10 @@
 #include "canvas.h"
 
 #include "canvasrenderer.h"
-#include "items/vectorpathcanvasitem.h"
 #include "tools/pentool.h"
+
+#include "items/spinnercanvasitem.h"
+#include "items/vectorpathcanvasitem.h"
 
 Canvas::Canvas()
     : QQuickRhiItem() {
@@ -11,18 +13,21 @@ Canvas::Canvas()
     connect(this, &QQuickItem::windowChanged,
             this, &Canvas::windowChanged);
 
-    m_items << new VectorPathCanvasItem(QVector2D{-10, 0}, {new VectorPath::LineSegment(QVector2D{10, 10}),
-                                                        new VectorPath::LineSegment(QVector2D{10, -10}),
-                                                        new VectorPath::LineSegment(QVector2D{-10, -10}),
-                                                        new VectorPath::LineSegment(QVector2D{-10, 10})});
+    addItem(new VectorPathCanvasItem(QVector2D{-10, 0}, {new VectorPath::LineSegment(QVector2D{10, 10}),
+                                                         new VectorPath::LineSegment(QVector2D{10, -10}),
+                                                         new VectorPath::LineSegment(QVector2D{-10, -10}),
+                                                         new VectorPath::LineSegment(QVector2D{-10, 10})}));
 
-    m_items << new VectorPathCanvasItem(QVector2D{10, 10+200}, {new VectorPath::QuadCurveSegment(QVector2D{0, -200}, QVector2D{200, -200}),
-                                                                new VectorPath::LineSegment(QVector2D{100, 0}),
-                                                                  new VectorPath::LineSegment(QVector2D{20, 20}),
-                                                                  new VectorPath::LineSegment(QVector2D{-20, 20}),
-                                                                new VectorPath::QuadCurveSegment(QVector2D{200, 0}, QVector2D{200, 200})});
-    m_items << new VectorPathCanvasItem(QVector2D{60, 60+200}, {new VectorPath::CubicCurveSegment(QVector2D{0, -110}, QVector2D{90, -200}, QVector2D{200, -200}),
-                                                                new VectorPath::CubicCurveSegment(QVector2D{110, 0}, QVector2D{200, 90}, QVector2D{200, 200})});
+    addItem(new VectorPathCanvasItem(QVector2D{10, 10+200}, {new VectorPath::QuadCurveSegment(QVector2D{0, -200}, QVector2D{200, -200}),
+                                                             new VectorPath::LineSegment(QVector2D{100, 0}),
+                                                             new VectorPath::LineSegment(QVector2D{20, 20}),
+                                                             new VectorPath::LineSegment(QVector2D{-20, 20}),
+                                                             new VectorPath::QuadCurveSegment(QVector2D{200, 0}, QVector2D{200, 200})}));
+
+    addItem(new VectorPathCanvasItem(QVector2D{60, 60+200}, {new VectorPath::CubicCurveSegment(QVector2D{0, -110}, QVector2D{90, -200}, QVector2D{200, -200}),
+                                                             new VectorPath::CubicCurveSegment(QVector2D{110, 0}, QVector2D{200, 90}, QVector2D{200, 200})}));
+
+    addItem(new SpinnerCanvasItem());
 
     m_tools << new PenTool(this);
 }
@@ -135,6 +140,12 @@ void Canvas::setTransformOrigin(QVector2D transformOrigin)
 
     m_transformOrigin = transformOrigin;
     emit transformOriginChanged();
+}
+
+void Canvas::addItem(CanvasItem *item)
+{
+    item->setCanvas(this);
+    m_items << item;
 }
 
 void Canvas::setLastCompletedTime(double newLastCompletedTime)

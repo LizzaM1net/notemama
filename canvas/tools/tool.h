@@ -15,10 +15,6 @@ public:
     virtual void mouseRelease() = 0;
 
 protected:
-    QList<VectorPathCanvasItem *> &canvasItems();
-    void updateCanvas();
-
-private:
     Canvas *m_canvas = nullptr;
 };
 

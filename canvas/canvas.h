@@ -5,7 +5,7 @@
 #include <QSGRendererInterface>
 #include <QQuickWindow>
 
-class VectorPathCanvasItem;
+class CanvasItem;
 class Tool;
 
 class Canvas : public QQuickRhiItem {
@@ -21,8 +21,6 @@ class Canvas : public QQuickRhiItem {
     Q_PROPERTY(QVector2D transformOrigin READ transformOrigin WRITE setTransformOrigin NOTIFY transformOriginChanged FINAL)
 
     friend class CanvasRenderer;
-    // This temporary
-    friend class Tool;
 
 public:
     enum InputMode {
@@ -51,6 +49,10 @@ public:
     QVector2D transformOrigin() const;
     void setTransformOrigin(QVector2D transformOrigin);
 
+// Used by canvas items and instruments
+public:
+    void addItem(CanvasItem *item);
+
 signals:
     void lastCompletedTimeChanged();
     void graphicsApiChanged();
@@ -77,7 +79,7 @@ private:
     InputMode m_inputMode = Raw;
     QList<Tool*> m_tools;
 
-    QList<VectorPathCanvasItem*> m_items;
+    QList<CanvasItem*> m_items;
 
     bool m_pressed = false;
 

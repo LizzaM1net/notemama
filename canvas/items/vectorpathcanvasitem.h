@@ -1,14 +1,13 @@
 #ifndef VECTORPATHCANVASITEM_H
 #define VECTORPATHCANVASITEM_H
 
+#include "canvasitem.h"
+
 #include <QVector2D>
 #include <QList>
 #include <QColor>
 
 class QRhiBuffer;
-class QRhiResourceUpdateBatch;
-class QRhiCommandBuffer;
-class QRhi;
 
 struct ColorVector2D {
     ColorVector2D(QVector2D point, float red, float green, float blue)
@@ -17,7 +16,7 @@ struct ColorVector2D {
         , green(green)
         , blue(blue) {}
 
-    constexpr ColorVector2D(QVector2D point, QColor color)
+    ColorVector2D(QVector2D point, QColor color)
         : point(point)
         , red(color.redF())
         , green(color.greenF())
@@ -81,18 +80,17 @@ namespace VectorPath {
     };
 }
 
-struct VectorPathCanvasItem
+class VectorPathCanvasItem : public CanvasItem
 {
+public:
     VectorPathCanvasItem(QVector2D startPoint, QList<VectorPath::Segment*> segments);
     ~VectorPathCanvasItem();
 
-    void synchronize(QRhi *rhi, QRhiResourceUpdateBatch *updateBatch);
-    void render(QRhiCommandBuffer *cb);
+    void synchronize(QRhi *rhi, QRhiResourceUpdateBatch *updateBatch) override;
+    void render(QRhiCommandBuffer *cb) override;
 
     QVector2D startPoint;
     QList<VectorPath::Segment*> segments;
-
-    bool changed = true;
 
 private:
     QList<ColorVector2D> generateVertices();

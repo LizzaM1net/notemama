@@ -127,11 +127,6 @@ VectorPathCanvasItem::~VectorPathCanvasItem()
 
 void VectorPathCanvasItem::synchronize(QRhi *rhi, QRhiResourceUpdateBatch *updateBatch)
 {
-    if (!changed)
-        return;
-
-    changed = false;
-
     QList<ColorVector2D> vertexData = generateVertices();
     m_verticesCount = vertexData.size();
 

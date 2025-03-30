@@ -3,7 +3,7 @@
 #include <QFile>
 
 #include "canvas.h"
-#include "items/vectorpathcanvasitem.h"
+#include "items/canvasitem.h"
 
 CanvasRenderer::CanvasRenderer(Canvas *item)
     : QQuickRhiItemRenderer()
@@ -62,11 +62,8 @@ void CanvasRenderer::synchronize(QQuickRhiItem *item) {
     if (canvas->m_viewportChanged) {
         // Probably safe to use rhi from here because clipSpaceCorrMatrix just returns hardcoded matrix from graphical backend
         m_transformMatrix = m_rhi->clipSpaceCorrMatrix();
-        m_transformMatrix.ortho(canvas->m_position.x(),
-                                canvas->m_size.width()/canvas->m_scale+canvas->m_position.x(),
-                                canvas->m_size.height()/canvas->m_scale+canvas->m_position.y(),
-                                canvas->m_position.y(),
-                                -1, 1);
+        m_viewRect = QRectF(canvas->m_position.toPointF(), canvas->m_size/canvas->m_scale);
+        m_transformMatrix.ortho(m_viewRect);
         canvas->m_viewportChanged = false;
 
         if (!m_updateBatch)
@@ -78,7 +75,9 @@ void CanvasRenderer::synchronize(QQuickRhiItem *item) {
         m_updateBatch = m_rhi->nextResourceUpdateBatch();
 
     for (int i = 0; i < m_item->m_items.size(); i++) {
-        m_item->m_items[i]->synchronize(m_rhi, m_updateBatch);
+        QRectF itemRect = m_item->m_items[i]->boundingRect();
+        if ((itemRect.isEmpty() || m_viewRect.intersects(m_item->m_items[i]->boundingRect())) && m_item->m_items[i]->trySync())
+            m_item->m_items[i]->synchronize(m_rhi, m_updateBatch);
     }
 }
 
@@ -94,7 +93,9 @@ void CanvasRenderer::render(QRhiCommandBuffer *cb) {
     cb->setShaderResources();
 
     for (int i = 0; i < m_item->m_items.size(); i++) {
-        m_item->m_items[i]->render(cb);
+        QRectF itemRect = m_item->m_items[i]->boundingRect();
+        if (itemRect.isEmpty() || m_viewRect.intersects(itemRect))
+            m_item->m_items[i]->render(cb);
     }
 
     cb->endPass();

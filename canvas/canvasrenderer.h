@@ -27,6 +27,7 @@ private:
     std::unique_ptr<QRhiShaderResourceBindings> m_srb;
     QList<int> m_itemSizes;
 
+    QRectF m_viewRect;
     QMatrix4x4 m_transformMatrix;
     std::unique_ptr<QRhiBuffer> m_ubuf;
 };
