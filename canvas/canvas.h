@@ -5,11 +5,7 @@
 #include <QSGRendererInterface>
 #include <QQuickWindow>
 
-struct LineUpdate {
-    int index;
-    int updateStart;
-    int updateEnd;
-};
+class VectorPathCanvasItem;
 
 class Canvas : public QQuickRhiItem {
     Q_OBJECT
@@ -33,6 +29,7 @@ public:
 
 public:
     Canvas();
+    ~Canvas();
 
     double lastCompletedTime() const;
 
@@ -76,8 +73,7 @@ protected:
 private:
     InputMode m_inputMode = Raw;
 
-    QList<QList<QPointF>> m_lines;
-    QList<LineUpdate> m_lineUpdates;
+    QList<VectorPathCanvasItem*> m_items;
 
     bool m_pressed = false;
 

@@ -21,13 +21,12 @@ private:
 
     QRhi *m_rhi = nullptr;
 
-    QList<QList<float>> m_vertexDatas;
-
     QRhiResourceUpdateBatch *m_updateBatch = nullptr;
 
     std::unique_ptr<QRhiGraphicsPipeline> m_pipeline;
     std::unique_ptr<QRhiShaderResourceBindings> m_srb;
     QList<std::shared_ptr<QRhiBuffer>> m_vbufs;
+    QList<int> m_itemSizes;
 
     QMatrix4x4 m_transformMatrix;
     std::unique_ptr<QRhiBuffer> m_ubuf;

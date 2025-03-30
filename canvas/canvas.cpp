@@ -1,67 +1,7 @@
 #include "canvas.h"
 
-#include <iostream>
-
 #include "canvasrenderer.h"
-
-void debugCurve(QList<QPointF> controlPoints) {
-    QList<QPointF> tangentPoints = {-2*controlPoints[0]+2*controlPoints[1], -2*controlPoints[1]+2*controlPoints[2]};
-    int points = 10;
-    QList<QPointF> curve;
-    for (int i = 0; i < points; i++) {
-        float t = float(i)/(points-1.);
-        QPointF point = controlPoints[0]*(1.-t)*(1.-t) + 2.*controlPoints[1]*t*(1.-t) + controlPoints[2]*t*t;
-        QPointF tangent = tangentPoints[0]*(1.-t) + tangentPoints[1]*t;
-        curve << point;
-    }
-    QList<float> fakeTs = {0};
-    for (int i = 1; i < points; i++) {
-        QPointF vector = curve[i-1] - curve[i];
-        fakeTs << fakeTs.last() + qHypot(vector.x(), vector.y());
-    }
-    std::cout << "==============" << std::endl;
-    for (int i = 0; i < points; i++) {
-        fakeTs[i] /= fakeTs.last();
-        std::cout << "real t:" << i/(points-1.) << "fake t:" << fakeTs[i] << std::endl;
-    }
-}
-
-QList<QPointF> quadCurve(QList<QPointF> controlPoints) {
-    // debugCurve(controlPoints);
-    QList<QPointF> tangentPoints = {-2*controlPoints[0]+2*controlPoints[1], -2*controlPoints[1]+2*controlPoints[2]};
-    QList<QPointF> curve;
-    float width = 3;
-    int points = 40;
-    {
-        float t = 0;
-        QPointF point = controlPoints[0]*(1.-t)*(1.-t) + 2.*controlPoints[1]*t*(1.-t) + controlPoints[2]*t*t;
-        QPointF tangent = tangentPoints[0]*(1.-t) + tangentPoints[1]*t;
-        QPointF normal = QPointF(tangent.y(), -tangent.x());
-        normal /= qHypot(normal.x(), normal.y());
-        curve << point + -1 * normal * width;
-    }
-    for (int i = 0; i < points; i++) {
-        float t = float(i)/(points-1.);
-        QPointF point = controlPoints[0]*(1.-t)*(1.-t) + 2.*controlPoints[1]*t*(1.-t) + controlPoints[2]*t*t;
-        QPointF tangent = tangentPoints[0]*(1.-t) + tangentPoints[1]*t;
-        QPointF normal = QPointF(tangent.y(), -tangent.x());
-        normal /= qHypot(normal.x(), normal.y());
-        curve << point + (i%2==0 ? 1 : -1) * normal * width;
-    }
-    {
-        float t = 1;
-        QPointF point = controlPoints[0]*(1.-t)*(1.-t) + 2.*controlPoints[1]*t*(1.-t) + controlPoints[2]*t*t;
-        QPointF tangent = tangentPoints[0]*(1.-t) + tangentPoints[1]*t;
-        QPointF normal = QPointF(tangent.y(), -tangent.x());
-        normal /= qHypot(normal.x(), normal.y());
-        curve << point + 1 * normal * width;
-    }
-    return curve;
-}
-
-// QList<QPointF> cubicQuadFit(QList<QPointF>) {
-
-// }
+#include "items/vectorpathcanvasitem.h"
 
 Canvas::Canvas()
     : QQuickRhiItem() {
@@ -70,81 +10,28 @@ Canvas::Canvas()
     connect(this, &QQuickItem::windowChanged,
             this, &Canvas::windowChanged);
 
+    m_items << new VectorPathCanvasItem(QVector2D{-10, 0}, {new VectorPath::LineSegment(QVector2D{10, 10}),
+                                                        new VectorPath::LineSegment(QVector2D{10, -10}),
+                                                        new VectorPath::LineSegment(QVector2D{-10, -10}),
+                                                        new VectorPath::LineSegment(QVector2D{-10, 10})});
 
-    // m_lines << cubicCurve({{40-10+400, 40+10+400}, {40-10, 40+10+400}, {40-10, 40+10}})
-    //         << cubicCurve({{40, 40}, {40+400, 40}, {40+400, 40+400}});
-    m_lines << quadCurve({{40-10, 40-10+200}, {40-10, 40-10}, {40-10+200, 40-10}})
-            << quadCurve({{40-10, 40+10+200}, {40-10, 40+10+400}, {40-10+200, 40+10+400}})
-            << quadCurve({{40+10+200, 40-10}, {40+10+400, 40-10}, {40+10+400, 40-10+200}});
-    // m_lines << cubicCurve({{40-10, 40-10+200}, {40-10, 40-10}, {40-10+200, 40-10}})
-    //         << cubicCurve({{40-10, 40-10+400}, {40-10, 40-10}, {40-10+400, 40-10}});
+    m_items << new VectorPathCanvasItem(QVector2D{10, 10+200}, {new VectorPath::QuadCurveSegment(QVector2D{0, -200}, QVector2D{200, -200}),
+                                                                new VectorPath::LineSegment(QVector2D{100, 0}),
+                                                                  new VectorPath::LineSegment(QVector2D{20, 20}),
+                                                                  new VectorPath::LineSegment(QVector2D{-20, 20}),
+                                                                new VectorPath::QuadCurveSegment(QVector2D{200, 0}, QVector2D{200, 200})});
+    m_items << new VectorPathCanvasItem(QVector2D{60, 60+200}, {new VectorPath::CubicCurveSegment(QVector2D{0, -110}, QVector2D{90, -200}, QVector2D{200, -200}),
+                                                                new VectorPath::CubicCurveSegment(QVector2D{110, 0}, QVector2D{200, 90}, QVector2D{200, 200})});
 }
 
-QQuickRhiItemRenderer *Canvas::createRenderer() {
-    return new CanvasRenderer(this);
-}
-
-void Canvas::mousePressEvent(QMouseEvent *event) {
-    if (m_inputMode == Raw) {
-        m_pressed = true;
-        m_lines.append(QList<QPointF>());
-        m_lines.last().append(event->points().first().position());
-    } else if (m_inputMode == Lines) {
-        if (!m_pressed) {
-            m_pressed = true;
-            m_lines.append(QList<QPointF>());
-        }
-        m_lines.last().append(event->points().first().position());
-    } else {
-        Q_UNREACHABLE();
-    }
-    update();
-}
-
-void Canvas::mouseMoveEvent(QMouseEvent *event) {
-    if (m_inputMode == Raw) {
-        if (m_pressed) {
-            m_lines.last().append(event->points().first().position());
-            update();
-        }
-    }
-}
-
-void Canvas::mouseReleaseEvent(QMouseEvent *event) {
-    if (m_inputMode == Raw) {
-        m_pressed = false;
-    }
-}
-
-Canvas::InputMode Canvas::inputMode() const
+Canvas::~Canvas()
 {
-    return m_inputMode;
-}
-
-void Canvas::setInputMode(InputMode newInputMode)
-{
-    if (m_inputMode == Lines) {
-        m_pressed = false;
-    }
-
-    if (m_inputMode == newInputMode)
-        return;
-    m_inputMode = newInputMode;
-    emit inputModeChanged();
+    qDeleteAll(m_items);
 }
 
 double Canvas::lastCompletedTime() const
 {
     return m_lastCompletedTime;
-}
-
-void Canvas::setLastCompletedTime(double newLastCompletedTime)
-{
-    if (qFuzzyCompare(m_lastCompletedTime, newLastCompletedTime))
-        return;
-
-    m_lastCompletedTime = newLastCompletedTime;
-    emit lastCompletedTimeChanged();
 }
 
 QString Canvas::graphicsApi() const
@@ -171,6 +58,23 @@ QString Canvas::graphicsApi() const
     }
 }
 
+Canvas::InputMode Canvas::inputMode() const
+{
+    return m_inputMode;
+}
+
+void Canvas::setInputMode(InputMode newInputMode)
+{
+    if (m_inputMode == Lines) {
+        m_pressed = false;
+    }
+
+    if (m_inputMode == newInputMode)
+        return;
+    m_inputMode = newInputMode;
+    emit inputModeChanged();
+}
+
 QVector2D Canvas::position() const
 {
     return m_position;
@@ -183,6 +87,9 @@ void Canvas::setPosition(QVector2D position)
 
     m_position = position;
     m_viewportChanged = true;
+
+    emit positionChanged();
+    update();
 }
 
 void Canvas::move(QVector2D delta)
@@ -227,6 +134,15 @@ void Canvas::setTransformOrigin(QVector2D transformOrigin)
     emit transformOriginChanged();
 }
 
+void Canvas::setLastCompletedTime(double newLastCompletedTime)
+{
+    if (qFuzzyCompare(m_lastCompletedTime, newLastCompletedTime))
+        return;
+
+    m_lastCompletedTime = newLastCompletedTime;
+    emit lastCompletedTimeChanged();
+}
+
 void Canvas::windowChanged(QQuickWindow *window)
 {
     if (!window)
@@ -236,6 +152,53 @@ void Canvas::windowChanged(QQuickWindow *window)
     if (api != m_graphicsApi) {
         m_graphicsApi = api;
         emit graphicsApiChanged();
+    }
+}
+
+QQuickRhiItemRenderer *Canvas::createRenderer() {
+    return new CanvasRenderer(this);
+}
+
+static QVector2D lastPoint;
+void Canvas::mousePressEvent(QMouseEvent *event) {
+    QVector2D point = QVector2D(event->points().first().position())/m_scale+m_position;
+    if (m_inputMode == Raw) {
+        m_pressed = true;
+        m_items << new VectorPathCanvasItem(point, {});
+        m_items.last()->changed = true;
+        lastPoint = point;
+    } else if (m_inputMode == Lines) {
+        if (!m_pressed) {
+            m_pressed = true;
+            m_items << new VectorPathCanvasItem(point, {});
+            m_items.last()->changed = true;
+            lastPoint = point;
+        } else {
+            m_items.last()->segments << new VectorPath::LineSegment(point-lastPoint);
+            m_items.last()->changed = true;
+            lastPoint = point;
+        }
+    } else {
+        Q_UNREACHABLE();
+    }
+    update();
+}
+
+void Canvas::mouseMoveEvent(QMouseEvent *event) {
+    if (m_inputMode == Raw) {
+        if (m_pressed) {
+            QVector2D point = QVector2D(event->points().first().position())/m_scale+m_position;
+            m_items.last()->segments << new VectorPath::LineSegment(point-lastPoint);
+            m_items.last()->changed = true;
+            lastPoint = point;
+            update();
+        }
+    }
+}
+
+void Canvas::mouseReleaseEvent(QMouseEvent *event) {
+    if (m_inputMode == Raw) {
+        m_pressed = false;
     }
 }
 
