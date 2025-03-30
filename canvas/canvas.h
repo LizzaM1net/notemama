@@ -6,6 +6,7 @@
 #include <QQuickWindow>
 
 class VectorPathCanvasItem;
+class Tool;
 
 class Canvas : public QQuickRhiItem {
     Q_OBJECT
@@ -20,6 +21,8 @@ class Canvas : public QQuickRhiItem {
     Q_PROPERTY(QVector2D transformOrigin READ transformOrigin WRITE setTransformOrigin NOTIFY transformOriginChanged FINAL)
 
     friend class CanvasRenderer;
+    // This temporary
+    friend class Tool;
 
 public:
     enum InputMode {
@@ -72,6 +75,7 @@ protected:
 
 private:
     InputMode m_inputMode = Raw;
+    QList<Tool*> m_tools;
 
     QList<VectorPathCanvasItem*> m_items;
 

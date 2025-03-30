@@ -21,6 +21,8 @@ qt_add_qml_module(appNoteMama
     SOURCES canvas/canvas.h canvas/canvas.cpp
     SOURCES canvas/canvasrenderer.h canvas/canvasrenderer.cpp
     SOURCES canvas/items/vectorpathcanvasitem.h canvas/items/vectorpathcanvasitem.cpp
+    SOURCES canvas/tools/pentool.h canvas/tools/pentool.cpp
+    SOURCES canvas/tools/tool.h canvas/tools/tool.cpp
 )
 
 qt_add_shaders(appNoteMama "appNoteMama_shaders"

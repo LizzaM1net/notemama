@@ -2,6 +2,7 @@
 
 #include "canvasrenderer.h"
 #include "items/vectorpathcanvasitem.h"
+#include "tools/pentool.h"
 
 Canvas::Canvas()
     : QQuickRhiItem() {
@@ -22,6 +23,8 @@ Canvas::Canvas()
                                                                 new VectorPath::QuadCurveSegment(QVector2D{200, 0}, QVector2D{200, 200})});
     m_items << new VectorPathCanvasItem(QVector2D{60, 60+200}, {new VectorPath::CubicCurveSegment(QVector2D{0, -110}, QVector2D{90, -200}, QVector2D{200, -200}),
                                                                 new VectorPath::CubicCurveSegment(QVector2D{110, 0}, QVector2D{200, 90}, QVector2D{200, 200})});
+
+    m_tools << new PenTool(this);
 }
 
 Canvas::~Canvas()
@@ -159,47 +162,22 @@ QQuickRhiItemRenderer *Canvas::createRenderer() {
     return new CanvasRenderer(this);
 }
 
-static QVector2D lastPoint;
+// static QVector2D lastPoint;
 void Canvas::mousePressEvent(QMouseEvent *event) {
     QVector2D point = QVector2D(event->points().first().position())/m_scale+m_position;
-    if (m_inputMode == Raw) {
-        m_pressed = true;
-        m_items << new VectorPathCanvasItem(point, {});
-        m_items.last()->changed = true;
-        lastPoint = point;
-    } else if (m_inputMode == Lines) {
-        if (!m_pressed) {
-            m_pressed = true;
-            m_items << new VectorPathCanvasItem(point, {});
-            m_items.last()->changed = true;
-            lastPoint = point;
-        } else {
-            m_items.last()->segments << new VectorPath::LineSegment(point-lastPoint);
-            m_items.last()->changed = true;
-            lastPoint = point;
-        }
-    } else {
-        Q_UNREACHABLE();
-    }
-    update();
+    m_tools.first()->mousePress(point);
 }
 
 void Canvas::mouseMoveEvent(QMouseEvent *event) {
-    if (m_inputMode == Raw) {
-        if (m_pressed) {
-            QVector2D point = QVector2D(event->points().first().position())/m_scale+m_position;
-            m_items.last()->segments << new VectorPath::LineSegment(point-lastPoint);
-            m_items.last()->changed = true;
-            lastPoint = point;
-            update();
-        }
-    }
+    QVector2D point = QVector2D(event->points().first().position())/m_scale+m_position;
+    m_tools.first()->mouseMove(point);
 }
 
 void Canvas::mouseReleaseEvent(QMouseEvent *event) {
-    if (m_inputMode == Raw) {
-        m_pressed = false;
-    }
+    m_tools.first()->mouseRelease();
+    // if (m_inputMode == Raw) {
+    //     m_pressed = false;
+    // }
 }
 
 void Canvas::geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) {
