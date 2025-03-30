@@ -15,6 +15,27 @@ Window {
 
         sampleCount: 8
 
+        PinchHandler {
+            target: null
+
+            onTranslationChanged: (delta) => {
+                if (delta.x != 0) {
+                    // print("translation", delta)
+                    canvas.transformOrigin = delta
+                }
+            }
+            // onRotationChanged: (delta) => print("rotation", delta)
+            // onScaleChanged: (delta) => print("scale", delta)
+            onScaleChanged: (delta) => canvas.scale *= delta
+        }
+
+        WheelHandler {
+            target: null
+            orientation: Qt.Horizontal | Qt.Vertical
+            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+            onWheel: (event) => canvas.move(event.pixelDelta)
+        }
+
         Row {
             id: toolbar
 
@@ -46,6 +67,16 @@ Window {
             }
             Text {
                 text: "Height: " + canvas.height
+            }
+
+            Text {
+                text: "Position: " + canvas.position
+            }
+            Text {
+                text: "Scale: " + canvas.scale
+            }
+            Text {
+                text: "Transform origin: " + canvas.transformOrigin
             }
         }
     }

@@ -171,6 +171,62 @@ QString Canvas::graphicsApi() const
     }
 }
 
+QVector2D Canvas::position() const
+{
+    return m_position;
+}
+
+void Canvas::setPosition(QVector2D position)
+{
+    if (m_position == position)
+        return;
+
+    m_position = position;
+    m_viewportChanged = true;
+}
+
+void Canvas::move(QVector2D delta)
+{
+    m_position -= delta/m_scale;
+    m_viewportChanged = true;
+
+    emit positionChanged();
+    update();
+}
+
+qreal Canvas::scale() const
+{
+    return m_scale;
+}
+
+void Canvas::setScale(qreal scale)
+{
+    if (qFuzzyCompare(m_scale, scale))
+        return;
+
+    m_position += (scale-m_scale)/scale*m_transformOrigin/m_scale;
+    m_scale = scale;
+    m_viewportChanged = true;
+
+    emit positionChanged();
+    emit scaleChanged();
+    update();
+}
+
+QVector2D Canvas::transformOrigin() const
+{
+    return m_transformOrigin;
+}
+
+void Canvas::setTransformOrigin(QVector2D transformOrigin)
+{
+    if (m_transformOrigin == transformOrigin)
+        return;
+
+    m_transformOrigin = transformOrigin;
+    emit transformOriginChanged();
+}
+
 void Canvas::windowChanged(QQuickWindow *window)
 {
     if (!window)
@@ -181,4 +237,12 @@ void Canvas::windowChanged(QQuickWindow *window)
         m_graphicsApi = api;
         emit graphicsApiChanged();
     }
+}
+
+void Canvas::geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) {
+    m_size = newGeometry.size();
+    m_viewportChanged = true;
+
+    // It calls update
+    QQuickRhiItem::geometryChange(newGeometry, oldGeometry);
 }

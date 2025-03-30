@@ -28,6 +28,9 @@ private:
     std::unique_ptr<QRhiGraphicsPipeline> m_pipeline;
     std::unique_ptr<QRhiShaderResourceBindings> m_srb;
     QList<std::shared_ptr<QRhiBuffer>> m_vbufs;
+
+    QMatrix4x4 m_transformMatrix;
+    std::unique_ptr<QRhiBuffer> m_ubuf;
 };
 
 #endif // CANVASRENDERER_H

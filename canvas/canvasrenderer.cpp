@@ -21,7 +21,13 @@ void CanvasRenderer::initialize(QRhiCommandBuffer *cb) {
     }
 
     if (!m_pipeline) {
+        m_ubuf.reset(m_rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 64));
+        m_ubuf->create();
+
         m_srb.reset(m_rhi->newShaderResourceBindings());
+        m_srb->setBindings({
+            QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage, m_ubuf.get()),
+        });
         m_srb->create();
 
         m_pipeline.reset(m_rhi->newGraphicsPipeline());
@@ -52,6 +58,20 @@ void CanvasRenderer::initialize(QRhiCommandBuffer *cb) {
 void CanvasRenderer::synchronize(QQuickRhiItem *item) {
     Canvas *canvas = static_cast<Canvas*>(item);
 
+    if (canvas->m_viewportChanged) {
+        m_transformMatrix = m_rhi->clipSpaceCorrMatrix();
+        m_transformMatrix.ortho(canvas->m_position.x(),
+                                canvas->m_size.width()/canvas->m_scale+canvas->m_position.x(),
+                                canvas->m_size.height()/canvas->m_scale+canvas->m_position.y(),
+                                canvas->m_position.y(),
+                                -1, 1);
+        canvas->m_viewportChanged = false;
+
+        if (!m_updateBatch)
+            m_updateBatch = m_rhi->nextResourceUpdateBatch();
+        m_updateBatch->updateDynamicBuffer(m_ubuf.get(), 0, 64, m_transformMatrix.constData());
+    }
+
     m_vertexDatas.clear();
 
     if (canvas->m_lines.isEmpty())
@@ -61,11 +81,11 @@ void CanvasRenderer::synchronize(QQuickRhiItem *item) {
         m_vertexDatas.append(QList<float>());
         QList<QPointF> &line = canvas->m_lines[i];
         for (int j = 0; j < line.size(); j++) {
-            m_vertexDatas[i] << 2*line[j].x()/canvas->width()-1
-                             << 1-2*line[j].y()/canvas->height()
-                             << (qSin(j)+1)/2
-                             << (qCos(j)+1)/2
-                             << 1;
+            m_vertexDatas[i] << line[j].x()
+            << line[j].y()
+            << (qSin(j)+1)/2
+            << (qCos(j)+1)/2
+            << 1;
         }
     }
 
@@ -98,6 +118,7 @@ void CanvasRenderer::render(QRhiCommandBuffer *cb) {
     QMetaObject::invokeMethod(m_item, &Canvas::setLastCompletedTime, Qt::QueuedConnection, cb->lastCompletedGpuTime());
 
     cb->setGraphicsPipeline(m_pipeline.get());
+    cb->setShaderResources();
 
     for (int i = 0; i < m_vbufs.size(); i++) {
         const QRhiCommandBuffer::VertexInput vbufBinding(m_vbufs[i].get(), 0);
