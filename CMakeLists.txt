@@ -12,13 +12,14 @@ qt_add_executable(appNoteMama
     main.cpp
 )
 
+target_include_directories(appNoteMama PRIVATE canvas)
 qt_add_qml_module(appNoteMama
     URI NoteMama
     VERSION 1.0
     QML_FILES
         Main.qml
-    SOURCES canvas.h canvas.cpp
-    SOURCES svgparser.h svgparser.cpp
+    SOURCES canvas/canvas.h canvas/canvas.cpp
+    SOURCES canvas/canvasrenderer.h canvas/canvasrenderer.cpp
 )
 
 qt_add_shaders(appNoteMama "appNoteMama_shaders"
