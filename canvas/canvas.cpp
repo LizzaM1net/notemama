@@ -2,6 +2,8 @@
 
 #include "canvasrenderer.h"
 #include "tools/pentool.h"
+#include "tools/curvepentool.h"
+#include "tools/fakedrawtool.h"
 
 #include "items/spinnercanvasitem.h"
 #include "items/vectorpathcanvasitem.h"
@@ -30,6 +32,8 @@ Canvas::Canvas()
     addItem(new SpinnerCanvasItem());
 
     m_tools << new PenTool(this);
+    m_tools << new CurvePenTool(this);
+    // m_tools << new FakeDrawTool(this, m_tools.last());
 }
 
 Canvas::~Canvas()
@@ -173,22 +177,18 @@ QQuickRhiItemRenderer *Canvas::createRenderer() {
     return new CanvasRenderer(this);
 }
 
-// static QVector2D lastPoint;
 void Canvas::mousePressEvent(QMouseEvent *event) {
     QVector2D point = QVector2D(event->points().first().position())/m_scale+m_position;
-    m_tools.first()->mousePress(point);
+    m_tools.last()->mousePress(point);
 }
 
 void Canvas::mouseMoveEvent(QMouseEvent *event) {
     QVector2D point = QVector2D(event->points().first().position())/m_scale+m_position;
-    m_tools.first()->mouseMove(point);
+    m_tools.last()->mouseMove(point);
 }
 
 void Canvas::mouseReleaseEvent(QMouseEvent *event) {
-    m_tools.first()->mouseRelease();
-    // if (m_inputMode == Raw) {
-    //     m_pressed = false;
-    // }
+    m_tools.last()->mouseRelease();
 }
 
 void Canvas::geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) {

@@ -25,6 +25,8 @@ qt_add_qml_module(appNoteMama
     SOURCES canvas/tools/tool.h canvas/tools/tool.cpp
     SOURCES canvas/items/canvasitem.h canvas/items/canvasitem.cpp
     SOURCES canvas/items/spinnercanvasitem.h canvas/items/spinnercanvasitem.cpp
+    SOURCES canvas/tools/curvepentool.h canvas/tools/curvepentool.cpp
+    SOURCES canvas/tools/fakedrawtool.h canvas/tools/fakedrawtool.cpp
 )
 
 qt_add_shaders(appNoteMama "appNoteMama_shaders"
