@@ -3,7 +3,7 @@
 #include <QDebug>
 
 #include "canvas.h"
-#include "items/vectorpathcanvasitem.h"
+#include "scene/items/vectorpathsceneitem.h"
 
 CurvePenTool::CurvePenTool(Canvas *canvas)
     : Tool(canvas) {}
@@ -68,8 +68,8 @@ QList<QVector2D> leastSquaresFitCurve(QList<QVector2D> points) {
 void CurvePenTool::mousePress(QVector2D position)
 {
     m_points << position;
-    m_pathItem = new VectorPathCanvasItem(position, {});
-    m_canvas->addItem(m_pathItem);
+    m_pathItem = new VectorPathSceneItem(position, {});
+    m_canvas->currentScene()->addItem(m_pathItem);
 }
 
 void CurvePenTool::mouseMove(QVector2D position)

@@ -12,21 +12,21 @@ qt_add_executable(appNoteMama
     main.cpp
 )
 
-target_include_directories(appNoteMama PRIVATE canvas)
+target_include_directories(appNoteMama PRIVATE scene/canvas)
 qt_add_qml_module(appNoteMama
     URI NoteMama
     VERSION 1.0
-    QML_FILES
-        Main.qml
-    SOURCES canvas/canvas.h canvas/canvas.cpp
-    SOURCES canvas/canvasrenderer.h canvas/canvasrenderer.cpp
-    SOURCES canvas/items/vectorpathcanvasitem.h canvas/items/vectorpathcanvasitem.cpp
-    SOURCES canvas/tools/pentool.h canvas/tools/pentool.cpp
-    SOURCES canvas/tools/tool.h canvas/tools/tool.cpp
-    SOURCES canvas/items/canvasitem.h canvas/items/canvasitem.cpp
-    SOURCES canvas/items/spinnercanvasitem.h canvas/items/spinnercanvasitem.cpp
-    SOURCES canvas/tools/curvepentool.h canvas/tools/curvepentool.cpp
-    SOURCES canvas/tools/fakedrawtool.h canvas/tools/fakedrawtool.cpp
+    QML_FILES Main.qml
+    SOURCES scene/canvas/canvas.h scene/canvas/canvas.cpp
+    SOURCES scene/canvas/canvasrenderer.h scene/canvas/canvasrenderer.cpp
+    SOURCES scene/items/vectorpathsceneitem.h scene/items/vectorpathsceneitem.cpp
+    SOURCES scene/canvas/tools/pentool.h scene/canvas/tools/pentool.cpp
+    SOURCES scene/canvas/tools/tool.h scene/canvas/tools/tool.cpp
+    SOURCES scene/items/sceneitem.h scene/items/sceneitem.cpp
+    SOURCES scene/items/spinnersceneitem.h scene/items/spinnersceneitem.cpp
+    SOURCES scene/canvas/tools/curvepentool.h scene/canvas/tools/curvepentool.cpp
+    SOURCES scene/canvas/tools/fakedrawtool.h scene/canvas/tools/fakedrawtool.cpp
+    SOURCES scene/scene.h scene/scene.cpp
 )
 
 qt_add_shaders(appNoteMama "appNoteMama_shaders"

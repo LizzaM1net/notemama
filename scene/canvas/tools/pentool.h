@@ -6,7 +6,7 @@
 #include <QVector2D>
 
 class Canvas;
-class VectorPathCanvasItem;
+class VectorPathSceneItem;
 
 class PenTool : public Tool {
 public:
@@ -17,7 +17,7 @@ public:
     void mouseRelease() override;
 
 private:
-    VectorPathCanvasItem *m_pathItem = nullptr;
+    VectorPathSceneItem *m_pathItem = nullptr;
     QVector2D m_lastPoint;
 };
 

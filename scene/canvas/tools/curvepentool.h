@@ -6,7 +6,7 @@
 #include <QVector2D>
 
 class Canvas;
-class VectorPathCanvasItem;
+class VectorPathSceneItem;
 namespace VectorPath {
     struct CubicCurveSegment;
 }
@@ -22,7 +22,7 @@ public:
 private:
     QList<QVector2D> m_points;
     VectorPath::CubicCurveSegment *m_segment = nullptr;
-    VectorPathCanvasItem *m_pathItem = nullptr;
+    VectorPathSceneItem *m_pathItem = nullptr;
 };
 
 #endif // CURVEPENTOOL_H

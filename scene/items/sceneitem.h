@@ -1,18 +1,18 @@
-#ifndef CANVASITEM_H
-#define CANVASITEM_H
+#ifndef SCENEITEM_H
+#define SCENEITEM_H
 
 #include <QRectF>
+#include <QList>
 
 class QRhiResourceUpdateBatch;
 class QRhiCommandBuffer;
 class QRhi;
 
-class Canvas;
+class Scene;
 
-class CanvasItem
-{
+class SceneItem {
 public:
-    CanvasItem();
+    SceneItem();
 
     virtual void synchronize(QRhi *rhi, QRhiResourceUpdateBatch *updateBatch) = 0;
     virtual void render(QRhiCommandBuffer *cb) = 0;
@@ -20,17 +20,15 @@ public:
     bool trySync();
     void setNeedsSync();
 
-    virtual QRectF boundingRect() {
-        return QRectF();
-    }
+    virtual QRectF boundingRect() = 0;
 
-    void setCanvas(Canvas *canvas);
+    void setScene(Scene *scene);
 
 protected:
-    Canvas *m_canvas = nullptr;
+    Scene *m_scene = nullptr;
 
 private:
     bool m_needsSync = true;
 };
 
-#endif // CANVASITEM_H
+#endif // SCENEITEM_H

@@ -1,4 +1,4 @@
-#include "vectorpathcanvasitem.h"
+#include "vectorpathsceneitem.h"
 
 #include <QDebug>
 #include <rhi/qrhi.h>
@@ -113,20 +113,16 @@ QVector2D VectorPath::CubicCurveSegment::outTangent() const
     return (relD-relC).normalized();
 }
 
-VectorPathCanvasItem::VectorPathCanvasItem(QVector2D startPoint, QList<VectorPath::Segment *> segments)
+VectorPathSceneItem::VectorPathSceneItem(QVector2D startPoint, QList<VectorPath::Segment *> segments)
     : startPoint(startPoint)
-    , segments(segments)
-{
-}
+    , segments(segments) {}
 
-VectorPathCanvasItem::~VectorPathCanvasItem()
-{
+VectorPathSceneItem::~VectorPathSceneItem() {
     qDeleteAll(segments);
     delete m_buffer;
 }
 
-void VectorPathCanvasItem::synchronize(QRhi *rhi, QRhiResourceUpdateBatch *updateBatch)
-{
+void VectorPathSceneItem::synchronize(QRhi *rhi, QRhiResourceUpdateBatch *updateBatch) {
     QList<ColorVector2D> vertexData = generateVertices();
     m_verticesCount = vertexData.size();
 
@@ -142,8 +138,7 @@ void VectorPathCanvasItem::synchronize(QRhi *rhi, QRhiResourceUpdateBatch *updat
     updateBatch->updateDynamicBuffer(m_buffer, 0, m_buffer->size(), vertexData.data());
 }
 
-void VectorPathCanvasItem::render(QRhiCommandBuffer *cb)
-{
+void VectorPathSceneItem::render(QRhiCommandBuffer *cb) {
     const QRhiCommandBuffer::VertexInput vbufBinding(m_buffer, 0);
     cb->setVertexInput(0, 1, &vbufBinding);
 
@@ -151,7 +146,11 @@ void VectorPathCanvasItem::render(QRhiCommandBuffer *cb)
     cb->draw(m_verticesCount);
 }
 
-QList<ColorVector2D> VectorPathCanvasItem::generateVertices()
+QRectF VectorPathSceneItem::boundingRect() {
+    return QRect();
+}
+
+QList<ColorVector2D> VectorPathSceneItem::generateVertices()
 {
     QList<ColorVector2D> points;
     QVector2D point = startPoint;

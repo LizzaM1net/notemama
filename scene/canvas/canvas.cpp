@@ -1,35 +1,23 @@
 #include "canvas.h"
 
+#include "scene/scene.h"
 #include "canvasrenderer.h"
+
 #include "tools/pentool.h"
 #include "tools/curvepentool.h"
 #include "tools/fakedrawtool.h"
 
-#include "items/spinnercanvasitem.h"
-#include "items/vectorpathcanvasitem.h"
-
+static Scene scene;
 Canvas::Canvas()
-    : QQuickRhiItem() {
+    : QQuickRhiItem()
+    , SceneObserver() {
     setAcceptedMouseButtons(Qt::AllButtons);
+
+    m_scene = &scene;
+    addObservedScene(m_scene);
 
     connect(this, &QQuickItem::windowChanged,
             this, &Canvas::windowChanged);
-
-    addItem(new VectorPathCanvasItem(QVector2D{-10, 0}, {new VectorPath::LineSegment(QVector2D{10, 10}),
-                                                         new VectorPath::LineSegment(QVector2D{10, -10}),
-                                                         new VectorPath::LineSegment(QVector2D{-10, -10}),
-                                                         new VectorPath::LineSegment(QVector2D{-10, 10})}));
-
-    addItem(new VectorPathCanvasItem(QVector2D{10, 10+200}, {new VectorPath::QuadCurveSegment(QVector2D{0, -200}, QVector2D{200, -200}),
-                                                             new VectorPath::LineSegment(QVector2D{100, 0}),
-                                                             new VectorPath::LineSegment(QVector2D{20, 20}),
-                                                             new VectorPath::LineSegment(QVector2D{-20, 20}),
-                                                             new VectorPath::QuadCurveSegment(QVector2D{200, 0}, QVector2D{200, 200})}));
-
-    addItem(new VectorPathCanvasItem(QVector2D{60, 60+200}, {new VectorPath::CubicCurveSegment(QVector2D{0, -110}, QVector2D{90, -200}, QVector2D{200, -200}),
-                                                             new VectorPath::CubicCurveSegment(QVector2D{110, 0}, QVector2D{200, 90}, QVector2D{200, 200})}));
-
-    addItem(new SpinnerCanvasItem());
 
     m_tools << new PenTool(this);
     m_tools << new CurvePenTool(this);
@@ -38,7 +26,7 @@ Canvas::Canvas()
 
 Canvas::~Canvas()
 {
-    qDeleteAll(m_items);
+    // delete m_scene;
 }
 
 double Canvas::lastCompletedTime() const
@@ -68,23 +56,6 @@ QString Canvas::graphicsApi() const
         return "Unknown 3D API";
         break;
     }
-}
-
-Canvas::InputMode Canvas::inputMode() const
-{
-    return m_inputMode;
-}
-
-void Canvas::setInputMode(InputMode newInputMode)
-{
-    if (m_inputMode == Lines) {
-        m_pressed = false;
-    }
-
-    if (m_inputMode == newInputMode)
-        return;
-    m_inputMode = newInputMode;
-    emit inputModeChanged();
 }
 
 QVector2D Canvas::position() const
@@ -146,10 +117,8 @@ void Canvas::setTransformOrigin(QVector2D transformOrigin)
     emit transformOriginChanged();
 }
 
-void Canvas::addItem(CanvasItem *item)
-{
-    item->setCanvas(this);
-    m_items << item;
+Scene *Canvas::currentScene() {
+    return m_scene;
 }
 
 void Canvas::setLastCompletedTime(double newLastCompletedTime)
@@ -161,8 +130,7 @@ void Canvas::setLastCompletedTime(double newLastCompletedTime)
     emit lastCompletedTimeChanged();
 }
 
-void Canvas::windowChanged(QQuickWindow *window)
-{
+void Canvas::windowChanged(QQuickWindow *window) {
     if (!window)
         return;
 
@@ -173,8 +141,12 @@ void Canvas::windowChanged(QQuickWindow *window)
     }
 }
 
+void Canvas::itemChanged(SceneItem *item) {
+    update();
+}
+
 QQuickRhiItemRenderer *Canvas::createRenderer() {
-    return new CanvasRenderer(this);
+    return new CanvasRenderer(this, m_scene);
 }
 
 void Canvas::mousePressEvent(QMouseEvent *event) {

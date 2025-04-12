@@ -1,15 +1,15 @@
 #include "pentool.h"
 
 #include "canvas.h"
-#include "items/vectorpathcanvasitem.h"
+#include "scene/items/vectorpathsceneitem.h"
 
 PenTool::PenTool(Canvas *canvas)
     : Tool(canvas) {}
 
 void PenTool::mousePress(QVector2D position)
 {
-    m_pathItem = new VectorPathCanvasItem(position, {});
-    m_canvas->addItem(m_pathItem);
+    m_pathItem = new VectorPathSceneItem(position, {});
+    m_canvas->currentScene()->addItem(m_pathItem);
     m_lastPoint = position;
 }
 

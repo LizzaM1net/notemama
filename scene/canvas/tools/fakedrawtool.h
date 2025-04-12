@@ -5,7 +5,7 @@
 
 #include <QVector2D>
 
-class VectorPathCanvasItem;
+class VectorPathSceneItem;
 
 class FakeDrawTool : public Tool
 {
@@ -23,7 +23,7 @@ private:
     QVector2D m_lastPoint;
     // int m_tapCount = 0;
 
-    VectorPathCanvasItem *m_pathItem;
+    VectorPathSceneItem *m_pathItem;
 };
 
 #endif // FAKEDRAWTOOL_H

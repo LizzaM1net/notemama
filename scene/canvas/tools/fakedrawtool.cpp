@@ -1,7 +1,7 @@
 #include "fakedrawtool.h"
 
 #include "canvas.h"
-#include "items/vectorpathcanvasitem.h"
+#include "scene/items/vectorpathsceneitem.h"
 
 FakeDrawTool::FakeDrawTool(Canvas *canvas, Tool *realTool)
     : Tool(canvas)
@@ -12,8 +12,8 @@ void FakeDrawTool::mousePress(QVector2D position)
     if (!m_fakePressed) {
         m_realTool->mousePress(position);
 
-        m_pathItem = new VectorPathCanvasItem(position, {});
-        m_canvas->addItem(m_pathItem);
+        m_pathItem = new VectorPathSceneItem(position, {});
+        m_canvas->currentScene()->addItem(m_pathItem);
         m_lastPoint = position;
 
         m_fakePressed = true;

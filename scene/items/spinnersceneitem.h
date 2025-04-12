@@ -1,22 +1,22 @@
-#ifndef SPINNERCANVASITEM_H
-#define SPINNERCANVASITEM_H
+#ifndef SPINNERSCENEITEM_H
+#define SPINNERSCENEITEM_H
 
-#include "canvasitem.h"
+#include "sceneitem.h"
 
 #include <QElapsedTimer>
 
 class QRhiBuffer;
 
-class SpinnerCanvasItem : public CanvasItem
+class SpinnerSceneItem : public SceneItem
 {
 public:
-    SpinnerCanvasItem();
-    ~SpinnerCanvasItem();
+    SpinnerSceneItem();
+    ~SpinnerSceneItem();
 
     void synchronize(QRhi *rhi, QRhiResourceUpdateBatch *updateBatch) override;
     void render(QRhiCommandBuffer *cb) override;
 
-    QRectF boundingRect();
+    QRectF boundingRect() override;
 
 private:
     QElapsedTimer m_timer;
@@ -24,4 +24,4 @@ private:
     QRhiBuffer *m_buffer = nullptr;
 };
 
-#endif // SPINNERCANVASITEM_H
+#endif // SPINNERSCENEITEM_H

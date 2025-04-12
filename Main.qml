@@ -36,25 +36,7 @@ Window {
             onWheel: (event) => canvas.move(event.pixelDelta)
         }
 
-        Row {
-            id: toolbar
-
-            Button {
-                text: "Raw"
-                checked: canvas.inputMode == Canvas.Raw
-                onClicked: canvas.inputMode = Canvas.Raw
-            }
-
-            Button {
-                text: "Lines"
-                checked: canvas.inputMode == Canvas.Lines
-                onClicked: canvas.inputMode = Canvas.Lines
-            }
-        }
-
         Column {
-            anchors.top: toolbar.bottom
-
             Text {
                 text: "Drawn in " + (canvas.lastCompletedTime*1000).toFixed(5) + " μs"
             }

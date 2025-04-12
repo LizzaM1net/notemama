@@ -3,14 +3,15 @@
 #include <QFile>
 
 #include "canvas.h"
-#include "items/canvasitem.h"
+#include "scene/scene.h"
+#include "scene/items/sceneitem.h"
 
-CanvasRenderer::CanvasRenderer(Canvas *item)
+CanvasRenderer::CanvasRenderer(Canvas *item, Scene *scene)
     : QQuickRhiItemRenderer()
-    , m_item(item) {}
+    , m_item(item)
+    , m_scene(scene) {}
 
-static QShader getShader(const QString &name)
-{
+static QShader getShader(const QString &name) {
     QFile f(name);
     return f.open(QIODevice::ReadOnly) ? QShader::fromSerialized(f.readAll()) : QShader();
 }
@@ -74,10 +75,10 @@ void CanvasRenderer::synchronize(QQuickRhiItem *item) {
     if (!m_updateBatch)
         m_updateBatch = m_rhi->nextResourceUpdateBatch();
 
-    for (int i = 0; i < m_item->m_items.size(); i++) {
-        QRectF itemRect = m_item->m_items[i]->boundingRect();
-        if ((itemRect.isEmpty() || m_viewRect.intersects(m_item->m_items[i]->boundingRect())) && m_item->m_items[i]->trySync())
-            m_item->m_items[i]->synchronize(m_rhi, m_updateBatch);
+    for (int i = 0; i < m_scene->items.size(); i++) {
+        QRectF itemRect = m_scene->items[i]->boundingRect();
+        if ((itemRect.isEmpty() || m_viewRect.intersects(itemRect)) && m_scene->items[i]->trySync())
+            m_scene->items[i]->synchronize(m_rhi, m_updateBatch);
     }
 }
 
@@ -92,10 +93,10 @@ void CanvasRenderer::render(QRhiCommandBuffer *cb) {
     cb->setGraphicsPipeline(m_pipeline.get());
     cb->setShaderResources();
 
-    for (int i = 0; i < m_item->m_items.size(); i++) {
-        QRectF itemRect = m_item->m_items[i]->boundingRect();
+    for (int i = 0; i < m_scene->items.size(); i++) {
+        QRectF itemRect = m_scene->items[i]->boundingRect();
         if (itemRect.isEmpty() || m_viewRect.intersects(itemRect))
-            m_item->m_items[i]->render(cb);
+            m_scene->items[i]->render(cb);
     }
 
     cb->endPass();

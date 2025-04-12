@@ -6,10 +6,11 @@
 #include <rhi/qrhi.h>
 
 class Canvas;
+class Scene;
 
 class CanvasRenderer : public QQuickRhiItemRenderer {
 public:
-    CanvasRenderer(Canvas *item);
+    CanvasRenderer(Canvas *item, Scene *scene);
 
 protected:
     void initialize(QRhiCommandBuffer *cb);
@@ -18,6 +19,7 @@ protected:
 
 private:
     Canvas *m_item = nullptr;
+    Scene *m_scene = nullptr;
 
     QRhi *m_rhi = nullptr;
 

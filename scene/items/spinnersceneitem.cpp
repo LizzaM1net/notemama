@@ -1,20 +1,20 @@
-#include "spinnercanvasitem.h"
+#include "spinnersceneitem.h"
 
 #include <rhi/qrhi.h>
 
 #include "canvas.h"
-#include "vectorpathcanvasitem.h"
+#include "vectorpathsceneitem.h"
 
-SpinnerCanvasItem::SpinnerCanvasItem() {
+SpinnerSceneItem::SpinnerSceneItem() {
     m_timer.start();
 }
 
-SpinnerCanvasItem::~SpinnerCanvasItem()
+SpinnerSceneItem::~SpinnerSceneItem()
 {
     delete m_buffer;
 }
 
-void SpinnerCanvasItem::synchronize(QRhi *rhi, QRhiResourceUpdateBatch *updateBatch)
+void SpinnerSceneItem::synchronize(QRhi *rhi, QRhiResourceUpdateBatch *updateBatch)
 {
     if (m_buffer == nullptr) {
         m_buffer = rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::VertexBuffer, 4*sizeof(ColorVector2D));
@@ -30,7 +30,7 @@ void SpinnerCanvasItem::synchronize(QRhi *rhi, QRhiResourceUpdateBatch *updateBa
     setNeedsSync();
 }
 
-void SpinnerCanvasItem::render(QRhiCommandBuffer *cb)
+void SpinnerSceneItem::render(QRhiCommandBuffer *cb)
 {
     const QRhiCommandBuffer::VertexInput vbufBinding(m_buffer, 0);
     cb->setVertexInput(0, 1, &vbufBinding);
@@ -38,7 +38,7 @@ void SpinnerCanvasItem::render(QRhiCommandBuffer *cb)
     cb->draw(4);
 }
 
-QRectF SpinnerCanvasItem::boundingRect()
+QRectF SpinnerSceneItem::boundingRect()
 {
     return QRectF(-10, -10, 20, 20);
 }

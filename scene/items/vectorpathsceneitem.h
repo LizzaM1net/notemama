@@ -1,7 +1,7 @@
-#ifndef VECTORPATHCANVASITEM_H
-#define VECTORPATHCANVASITEM_H
+#ifndef VECTORPATHSCENEITEM_H
+#define VECTORPATHSCENEITEM_H
 
-#include "canvasitem.h"
+#include "sceneitem.h"
 
 #include <QVector2D>
 #include <QList>
@@ -80,14 +80,16 @@ namespace VectorPath {
     };
 }
 
-class VectorPathCanvasItem : public CanvasItem
+class VectorPathSceneItem : public SceneItem
 {
 public:
-    VectorPathCanvasItem(QVector2D startPoint, QList<VectorPath::Segment*> segments);
-    ~VectorPathCanvasItem();
+    VectorPathSceneItem(QVector2D startPoint, QList<VectorPath::Segment*> segments);
+    ~VectorPathSceneItem();
 
     void synchronize(QRhi *rhi, QRhiResourceUpdateBatch *updateBatch) override;
     void render(QRhiCommandBuffer *cb) override;
+
+    QRectF boundingRect() override;
 
     QVector2D startPoint;
     QList<VectorPath::Segment*> segments;
@@ -99,4 +101,4 @@ private:
     int m_verticesCount = 0;
 };
 
-#endif // VECTORPATHCANVASITEM_H
+#endif // VECTORPATHSCENEITEM_H

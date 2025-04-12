@@ -5,16 +5,17 @@
 #include <QSGRendererInterface>
 #include <QQuickWindow>
 
-class CanvasItem;
+#include "scene/scene.h"
+
+class SceneItem;
 class Tool;
 
-class Canvas : public QQuickRhiItem {
+class Canvas : public QQuickRhiItem, public SceneObserver {
     Q_OBJECT
     QML_ELEMENT
 
     Q_PROPERTY(double lastCompletedTime READ lastCompletedTime NOTIFY lastCompletedTimeChanged FINAL)
     Q_PROPERTY(QString graphicsApi READ graphicsApi NOTIFY graphicsApiChanged FINAL)
-    Q_PROPERTY(InputMode inputMode READ inputMode WRITE setInputMode NOTIFY inputModeChanged FINAL)
 
     Q_PROPERTY(QVector2D position READ position WRITE setPosition NOTIFY positionChanged FINAL)
     Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged FINAL)
@@ -23,21 +24,12 @@ class Canvas : public QQuickRhiItem {
     friend class CanvasRenderer;
 
 public:
-    enum InputMode {
-        Raw,
-        Lines,
-    }; Q_ENUM(InputMode)
-
-public:
     Canvas();
     ~Canvas();
 
     double lastCompletedTime() const;
 
     QString graphicsApi() const;
-
-    InputMode inputMode() const;
-    void setInputMode(InputMode newInputMode);
 
     QVector2D position() const;
     void setPosition(QVector2D position);
@@ -49,14 +41,11 @@ public:
     QVector2D transformOrigin() const;
     void setTransformOrigin(QVector2D transformOrigin);
 
-// Used by canvas items and instruments
-public:
-    void addItem(CanvasItem *item);
+    Scene *currentScene();
 
 signals:
     void lastCompletedTimeChanged();
     void graphicsApiChanged();
-    void inputModeChanged();
     void positionChanged();
     void scaleChanged();
     void transformOriginChanged();
@@ -67,6 +56,8 @@ private slots:
     void windowChanged(QQuickWindow *window);
 
 protected:
+    void itemChanged(SceneItem *item) override;
+
     QQuickRhiItemRenderer *createRenderer() override;
 
     void mousePressEvent(QMouseEvent *event) override;
@@ -76,10 +67,9 @@ protected:
     void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;
 
 private:
-    InputMode m_inputMode = Raw;
     QList<Tool*> m_tools;
 
-    QList<CanvasItem*> m_items;
+    Scene *m_scene = nullptr;
 
     bool m_pressed = false;
 
