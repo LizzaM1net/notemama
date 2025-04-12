@@ -40,5 +40,5 @@ void SpinnerCanvasItem::render(QRhiCommandBuffer *cb)
 
 QRectF SpinnerCanvasItem::boundingRect()
 {
-    return QRectF(-1, -1, 2, 2);
+    return QRectF(-10, -10, 20, 20);
 }

@@ -133,10 +133,9 @@ void VectorPathCanvasItem::synchronize(QRhi *rhi, QRhiResourceUpdateBatch *updat
     if (m_buffer == nullptr) {
         m_buffer = rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::VertexBuffer, vertexData.size()*sizeof(ColorVector2D));
         m_buffer->create();
-    }
-
-    if (m_buffer->size() < vertexData.size()*sizeof(ColorVector2D)) {
-        m_buffer->setSize(m_buffer->size()*2);
+    } else if (m_buffer->size() < vertexData.size()*sizeof(ColorVector2D)) {
+        quint32 newSize = qMax(m_buffer->size()*2, vertexData.size()*sizeof(ColorVector2D));
+        m_buffer->setSize(newSize);
         m_buffer->create();
     }
 
