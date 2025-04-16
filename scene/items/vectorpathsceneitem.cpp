@@ -160,6 +160,7 @@ QList<ColorVector2D> VectorPathSceneItem::generateVertices()
         float dot = QVector2D::dotProduct(tangent, segment->inTangent());
         if (qFuzzyIsNull(dot))
             continue;
+        dot = qMax(dot, 4*m_lineWidth);
         normal /= dot;
 
         points << ColorVector2D(point, Qt::black) - m_lineWidth*normal
