@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtCore
 import NoteMama as NoteMama
 
 Window {
@@ -61,5 +62,22 @@ Window {
                 text: "Transform origin: " + canvas.transformOrigin
             }
         }
+
+        TextField {
+            id: fileField
+            anchors.right: parent.right
+            Component.onCompleted: text = settings.file
+        }
+    }
+
+    PdfParser {
+        id: parser
+        scene: canvas.scene
+        file: fileField.text
+    }
+
+    Settings {
+        id: settings
+        property alias file: parser.file
     }
 }

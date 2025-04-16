@@ -36,7 +36,7 @@ struct ColorVector2D {
 
 namespace VectorPath {
     struct Segment {
-        virtual QList<ColorVector2D> generateVertices(QVector2D startPoint) const = 0;
+        virtual QList<ColorVector2D> generateVertices(QVector2D startPoint, float lineWidth) const = 0;
         virtual QVector2D lastPoint(QVector2D startPoint) const = 0;
 
         virtual QVector2D inTangent() const = 0;
@@ -46,7 +46,7 @@ namespace VectorPath {
     struct LineSegment : public Segment {
         LineSegment(QVector2D relEnd);
 
-        QList<ColorVector2D> generateVertices(QVector2D startPoint) const override;
+        QList<ColorVector2D> generateVertices(QVector2D startPoint, float lineWidth) const override;
         QVector2D lastPoint(QVector2D startPoint) const override;
 
         QVector2D inTangent() const override;
@@ -58,7 +58,7 @@ namespace VectorPath {
     struct QuadCurveSegment : public Segment {
         QuadCurveSegment(QVector2D relB, QVector2D relC);
 
-        QList<ColorVector2D> generateVertices(QVector2D startPoint) const override;
+        QList<ColorVector2D> generateVertices(QVector2D startPoint, float lineWidth) const override;
         QVector2D lastPoint(QVector2D startPoint) const override;
 
         QVector2D inTangent() const override;
@@ -70,7 +70,7 @@ namespace VectorPath {
     struct CubicCurveSegment : public Segment {
         CubicCurveSegment(QVector2D relB, QVector2D relC, QVector2D relD);
 
-        QList<ColorVector2D> generateVertices(QVector2D startPoint) const override;
+        QList<ColorVector2D> generateVertices(QVector2D startPoint, float lineWidth) const override;
         QVector2D lastPoint(QVector2D startPoint) const override;
 
         QVector2D inTangent() const override;
@@ -96,6 +96,8 @@ public:
 
 private:
     QList<ColorVector2D> generateVertices();
+
+    float m_lineWidth = 1;
 
     QRhiBuffer *m_buffer = nullptr;
     int m_verticesCount = 0;

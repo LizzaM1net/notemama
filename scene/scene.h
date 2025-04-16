@@ -2,6 +2,7 @@
 #define SCENE_H
 
 #include <QObject>
+#include <qqmlintegration.h>
 
 class SceneItem;
 
@@ -22,7 +23,11 @@ private:
     QList<Scene *> observedScenes;
 };
 
-class Scene {
+class Scene : public QObject {
+    Q_OBJECT
+    QML_ELEMENT
+    QML_UNCREATABLE("unless...")
+
     friend class SceneObserver;
 
 public:

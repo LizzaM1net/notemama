@@ -14,6 +14,8 @@ class Canvas : public QQuickRhiItem, public SceneObserver {
     Q_OBJECT
     QML_ELEMENT
 
+    Q_PROPERTY(Scene *scene READ scene WRITE setScene NOTIFY sceneChanged FINAL)
+
     Q_PROPERTY(double lastCompletedTime READ lastCompletedTime NOTIFY lastCompletedTimeChanged FINAL)
     Q_PROPERTY(QString graphicsApi READ graphicsApi NOTIFY graphicsApiChanged FINAL)
 
@@ -26,6 +28,9 @@ class Canvas : public QQuickRhiItem, public SceneObserver {
 public:
     Canvas();
     ~Canvas();
+
+    Scene *scene() const;
+    void setScene(Scene *newScene);
 
     double lastCompletedTime() const;
 
@@ -44,6 +49,7 @@ public:
     Scene *currentScene();
 
 signals:
+    void sceneChanged();
     void lastCompletedTimeChanged();
     void graphicsApiChanged();
     void positionChanged();

@@ -6,6 +6,8 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+    app.setOrganizationName("vzrivniepodiki");
+    app.setOrganizationDomain("ru");
 
     std::cout << "QSG_RHI_PROFILE" << std::endl;
     qputenv("QSG_RHI_PROFILE", "1");

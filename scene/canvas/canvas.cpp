@@ -7,14 +7,12 @@
 #include "tools/curvepentool.h"
 #include "tools/fakedrawtool.h"
 
-static Scene scene;
 Canvas::Canvas()
     : QQuickRhiItem()
     , SceneObserver() {
     setAcceptedMouseButtons(Qt::AllButtons);
 
-    m_scene = &scene;
-    addObservedScene(m_scene);
+    setScene(new Scene());
 
     connect(this, &QQuickItem::windowChanged,
             this, &Canvas::windowChanged);
@@ -26,7 +24,24 @@ Canvas::Canvas()
 
 Canvas::~Canvas()
 {
-    // delete m_scene;
+    delete m_scene;
+}
+
+Scene *Canvas::scene() const
+{
+    return m_scene;
+}
+
+void Canvas::setScene(Scene *newScene)
+{
+    if (m_scene == newScene)
+        return;
+
+    removeObservedScene(m_scene);
+    addObservedScene(newScene);
+
+    m_scene = newScene;
+    emit sceneChanged();
 }
 
 double Canvas::lastCompletedTime() const
