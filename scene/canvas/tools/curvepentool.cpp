@@ -65,20 +65,12 @@ QList<QVector2D> leastSquaresFitCurve(QList<QVector2D> points) {
     return curve;
 }
 
-QList<QVector2D> leastSquaresFitCurveFixed(QList<QVector2D> points) {
-    QList<float> Ts(points.size());
-    Ts[0] = 0;
-    for (int i = 1; i < points.size(); i++) {
-        Ts[i] = Ts[i-1] + points[i-1].distanceToPoint(points[i]);
-    }
-    for (int i = 1; i < points.size(); i++) {
-        Ts[i] /= Ts.last();
-    }
+QList<QVector2D> leastSquaresFitCurveFixed(QList<QVector2D> points, QList<float> t) {
     int last = points.size()-1;
 
     float A = 0, B = 0, C = 0, D = 0;
-    for (const float &t : std::as_const(Ts)) {
-        double Bs[4] = { qPow(1-t, 3), 3*qPow(1-t, 2)*t, 3*(1-t)*qPow(t, 2), qPow(t, 3) };
+    for (int i = 0; i < points.size(); i++) {
+        double Bs[4] = { qPow(1-t[i], 3), 3*qPow(1-t[i], 2)*t[i], 3*(1-t[i])*qPow(t[i], 2), qPow(t[i], 3) };
         A += Bs[1]*Bs[1];
         B += Bs[1]*Bs[2];
         C += Bs[2]*Bs[1];
@@ -106,8 +98,7 @@ QList<QVector2D> leastSquaresFitCurveFixed(QList<QVector2D> points) {
     }
 
     for (int i = 0; i < points.size(); i++) {
-        float t = Ts[i];
-        double B[4] = { qPow(1-t, 3), 3*qPow(1-t, 2)*t, 3*(1-t)*qPow(t, 2), qPow(t, 3) };
+        double B[4] = { qPow(1-t[i], 3), 3*qPow(1-t[i], 2)*t[i], 3*(1-t[i])*qPow(t[i], 2), qPow(t[i], 3) };
         for (int j = 0; j < 2; j++) {
             xMatrix(j, 0) += B[j+1] * points[i].x() - B[0] * B[j+1] * points[0].x() - B[3] * B[j+1] * points[last].x();
             yMatrix(j, 0) += B[j+1] * points[i].y() - B[0] * B[j+1] * points[0].y() - B[3] * B[j+1] * points[last].y();
@@ -120,30 +111,71 @@ QList<QVector2D> leastSquaresFitCurveFixed(QList<QVector2D> points) {
     QList<QVector2D> curve;
     curve << points[0] << QVector2D(xCM(0, 0), yCM(0, 0))-points[0]
           << QVector2D(xCM(1, 0), yCM(1, 0))-points[last] << points[last];
+
     return curve;
 }
 
+float computeMaxError(QList<QVector2D> points, QList<float> t, QList<QVector2D> curve) {
+    float maxError = 0;
+    for (int i = 0; i < points.size(); i++) {
+        double B[4] = { qPow(1-t[i], 3), 3*qPow(1-t[i], 2)*t[i], 3*(1-t[i])*qPow(t[i], 2), qPow(t[i], 3) };
+        QVector2D deltaP = (B[0]+B[1])*curve[0] + B[1]*curve[1] + B[2]*curve[2] + (B[3]+B[2])*curve[3] - points[i];
+        maxError = qMax(deltaP.length(), maxError);
+    }
+    return maxError;
+}
+
+// static VectorPathSceneItem *s_rawPathItem;
+// static QVector2D s_rawPathLastPos;
 void CurvePenTool::mousePress(QVector2D position)
 {
     m_points << position;
     m_pathItem = new VectorPathSceneItem(position, {});
     m_canvas->currentScene()->addItem(m_pathItem);
+    // s_rawPathItem = new VectorPathSceneItem(position, {});
+    // s_rawPathLastPos = position;
+    // m_canvas->currentScene()->addItem(s_rawPathItem);
 }
 
 void CurvePenTool::mouseMove(QVector2D position)
 {
     m_points << position;
-    QList<QVector2D> curve = leastSquaresFitCurveFixed(m_points);
+
+    if (m_points.size() < 4)
+        return;
+
+    QList<float> Ts(m_points.size());
+    Ts[0] = 0;
+    for (int i = 1; i < m_points.size(); i++) {
+        Ts[i] = Ts[i-1] + m_points[i-1].distanceToPoint(m_points[i]);
+    }
+    for (int i = 1; i < m_points.size(); i++) {
+        Ts[i] /= Ts.last();
+    }
+
+    QList<QVector2D> curve = leastSquaresFitCurveFixed(m_points, Ts);
+    double maxError = computeMaxError(m_points, Ts, curve);
+    if (maxError > 10/m_canvas->scale()) {
+        m_points.clear();
+        m_points << position;
+        m_segment = nullptr;
+        return;
+    }
+    // qDebug() << maxError;
 
     if (!m_segment) {
         m_segment = new VectorPath::CubicCurveSegment({}, {}, {});
         m_pathItem->segments << m_segment;
     }
-    m_pathItem->startPoint = curve[0];
+    // m_pathItem->startPoint = curve[0];
     m_segment->relB = curve[1];
     m_segment->relC = curve[3]-curve[0]+curve[2];
     m_segment->relD = curve[3]-curve[0];
     m_pathItem->setNeedsSync();
+
+    // s_rawPathItem->segments << new VectorPath::LineSegment(position-s_rawPathLastPos);
+    // s_rawPathLastPos = position;
+    // s_rawPathItem->setNeedsSync();
 }
 
 void CurvePenTool::mouseRelease()
