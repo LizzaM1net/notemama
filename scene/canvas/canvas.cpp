@@ -19,7 +19,9 @@ Canvas::Canvas()
 
     m_tools << new PenTool(this);
     m_tools << new CurvePenTool(this);
-    // m_tools << new FakeDrawTool(this, m_tools.last());
+    m_tools << new FakeDrawTool(this, m_tools.last());
+    m_currentTool = m_tools.first();
+    emit toolsChanged();
 }
 
 Canvas::~Canvas()
@@ -136,8 +138,23 @@ Scene *Canvas::currentScene() {
     return m_scene;
 }
 
-void Canvas::setLastCompletedTime(double newLastCompletedTime)
-{
+QList<Tool*> Canvas::tools() {
+    return m_tools;
+}
+
+Tool *Canvas::currentTool() {
+    return m_currentTool;
+}
+
+void Canvas::setCurrentTool(Tool *currentTool) {
+    if (m_currentTool == currentTool)
+        return;
+
+    m_currentTool = currentTool;
+    emit currentToolChanged();
+}
+
+void Canvas::setLastCompletedTime(double newLastCompletedTime) {
     if (qFuzzyCompare(m_lastCompletedTime, newLastCompletedTime))
         return;
 
@@ -166,16 +183,16 @@ QQuickRhiItemRenderer *Canvas::createRenderer() {
 
 void Canvas::mousePressEvent(QMouseEvent *event) {
     QVector2D point = QVector2D(event->points().first().position())/m_scale+m_position;
-    m_tools.last()->mousePress(point);
+    m_currentTool->mousePress(point);
 }
 
 void Canvas::mouseMoveEvent(QMouseEvent *event) {
     QVector2D point = QVector2D(event->points().first().position())/m_scale+m_position;
-    m_tools.last()->mouseMove(point);
+    m_currentTool->mouseMove(point);
 }
 
 void Canvas::mouseReleaseEvent(QMouseEvent *event) {
-    m_tools.last()->mouseRelease();
+    m_currentTool->mouseRelease();
 }
 
 void Canvas::geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) {

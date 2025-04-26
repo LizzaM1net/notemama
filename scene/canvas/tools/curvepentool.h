@@ -12,6 +12,8 @@ namespace VectorPath {
 }
 
 class CurvePenTool : public Tool {
+    Q_OBJECT
+
 public:
     CurvePenTool(Canvas *canvas);
 

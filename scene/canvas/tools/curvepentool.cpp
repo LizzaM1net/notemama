@@ -156,8 +156,9 @@ void CurvePenTool::mouseMove(QVector2D position)
     QList<QVector2D> curve = leastSquaresFitCurveFixed(m_points, Ts);
     double maxError = computeMaxError(m_points, Ts, curve);
     if (maxError > 10/m_canvas->scale()) {
-        m_points.clear();
-        m_points << position;
+        m_points[0] = m_points[m_points.size()-2];
+        m_points[1] = m_points[m_points.size()-1];
+        m_points.resize(2);
         m_segment = nullptr;
         return;
     }

@@ -9,6 +9,8 @@ class Canvas;
 class VectorPathSceneItem;
 
 class PenTool : public Tool {
+    Q_OBJECT
+
 public:
     PenTool(Canvas *canvas);
 

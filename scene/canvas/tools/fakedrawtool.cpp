@@ -9,31 +9,106 @@ FakeDrawTool::FakeDrawTool(Canvas *canvas, Tool *realTool)
 
 void FakeDrawTool::mousePress(QVector2D position)
 {
-    if (!m_fakePressed) {
-        m_realTool->mousePress(position);
-
-        m_pathItem = new VectorPathSceneItem(position, {});
-        m_canvas->currentScene()->addItem(m_pathItem);
-        m_lastPoint = position;
-
-        m_fakePressed = true;
+    if (m_fakePressed) {
+        simulateMove(position);
     } else {
-        m_realTool->mouseMove(position);
+        simulatePress(position);
 
-        m_pathItem->segments << new VectorPath::LineSegment(position-m_lastPoint);
-        m_pathItem->setNeedsSync();
-        m_lastPoint = position;
+        if (m_clickAsMove)
+            m_fakePressed = true;
     }
-    // tapCount++;
-    // if (tapCount == 4) {
-    //     m_realTool->mouseRelease();
-    //     tapCount = 0;
-    //     m_pathItem = nullptr;
-    //     lastPoint = QVector2D();
-    //     m_fakePressed = false;
-    // }
+
+    m_lastPoint = position;
 }
 
-void FakeDrawTool::mouseMove(QVector2D position) {}
+void FakeDrawTool::mouseMove(QVector2D position) {
+    if (!m_clickAsMove && m_realTool) {
+        simulateMove(position);
+        m_lastPoint = position;
+    }
+}
 
-void FakeDrawTool::mouseRelease() {}
+void FakeDrawTool::mouseRelease() {
+    if (!m_clickAsMove && m_realTool)
+        m_realTool->mouseRelease();
+}
+
+Tool *FakeDrawTool::realTool() const {
+    return m_realTool;
+}
+
+void FakeDrawTool::setRealTool(Tool *realTool) {
+    if (m_realTool == realTool)
+        return;
+
+    if (realTool == this) {
+        qWarning() << "Trying to set FakeDrawTool's realTool to itself";
+        return;
+    }
+
+    if (m_fakePressed) {
+        m_realTool->mouseRelease();
+        realTool->mousePress(m_lastPoint);
+    }
+
+    m_realTool = realTool;
+    emit realToolChanged();
+}
+
+bool FakeDrawTool::drawTrail() const {
+    return m_drawTrail;
+}
+
+void FakeDrawTool::setDrawTrail(bool drawTrail) {
+    if (m_drawTrail == drawTrail)
+        return;
+
+    if (!drawTrail && m_trailItem)
+        m_trailItem = nullptr;
+
+    m_drawTrail = drawTrail;
+    emit drawTrailChanged();
+}
+
+bool FakeDrawTool::clickAsMove() const {
+    return m_clickAsMove;
+}
+
+void FakeDrawTool::setClickAsMove(bool clickAsMove) {
+    if (m_clickAsMove == clickAsMove)
+        return;
+
+    if (!clickAsMove && m_fakePressed) {
+        m_fakePressed = false;
+
+        if (m_realTool)
+            m_realTool->mouseRelease();
+    }
+
+    m_clickAsMove = clickAsMove;
+    emit clickAsMoveChanged();
+}
+
+void FakeDrawTool::simulatePress(QVector2D position) {
+    m_realTool->mousePress(position);
+
+    if (m_drawTrail)
+        createTrailItem(position);
+}
+
+void FakeDrawTool::simulateMove(QVector2D position) {
+    m_realTool->mouseMove(position);
+
+    if (m_drawTrail) {
+        if (m_trailItem) {
+            m_trailItem->segments << new VectorPath::LineSegment(position-m_lastPoint);
+            m_trailItem->setNeedsSync();
+        } else
+            createTrailItem(position);
+    }
+}
+
+void FakeDrawTool::createTrailItem(QVector2D position) {
+    m_trailItem = new VectorPathSceneItem(position, {});
+    m_canvas->currentScene()->addItem(m_trailItem);
+}

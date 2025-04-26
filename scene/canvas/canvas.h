@@ -6,9 +6,9 @@
 #include <QQuickWindow>
 
 #include "scene/scene.h"
+#include "tools/tool.h"
 
 class SceneItem;
-class Tool;
 
 class Canvas : public QQuickRhiItem, public SceneObserver {
     Q_OBJECT
@@ -22,6 +22,9 @@ class Canvas : public QQuickRhiItem, public SceneObserver {
     Q_PROPERTY(QVector2D position READ position WRITE setPosition NOTIFY positionChanged FINAL)
     Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged FINAL)
     Q_PROPERTY(QVector2D transformOrigin READ transformOrigin WRITE setTransformOrigin NOTIFY transformOriginChanged FINAL)
+
+    Q_PROPERTY(QList<Tool*> tools READ tools NOTIFY toolsChanged FINAL)
+    Q_PROPERTY(Tool* currentTool READ currentTool WRITE setCurrentTool NOTIFY currentToolChanged FINAL)
 
     friend class CanvasRenderer;
 
@@ -48,6 +51,10 @@ public:
 
     Scene *currentScene();
 
+    QList<Tool*> tools();
+    Tool *currentTool();
+    void setCurrentTool(Tool* currentTool);
+
 signals:
     void sceneChanged();
     void lastCompletedTimeChanged();
@@ -55,6 +62,8 @@ signals:
     void positionChanged();
     void scaleChanged();
     void transformOriginChanged();
+    void toolsChanged();
+    void currentToolChanged();
 
 private slots:
     void setLastCompletedTime(double newLastCompletedTime);
@@ -74,6 +83,7 @@ protected:
 
 private:
     QList<Tool*> m_tools;
+    Tool *m_currentTool = nullptr;
 
     Scene *m_scene = nullptr;
 

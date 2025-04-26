@@ -1,6 +1,7 @@
+import QtCore
+import QtQml.Models
 import QtQuick
 import QtQuick.Controls
-import QtCore
 import NoteMama as NoteMama
 
 Window {
@@ -68,6 +69,33 @@ Window {
             anchors.right: parent.right
             Component.onCompleted: text = settings.file
         }
+
+        ToolSettingsPopup {
+            id: toolSettingsPopup
+        }
+
+        ListView {
+            id: toolSelector
+
+            anchors.bottom: parent.bottom
+            width: parent.width
+            height: 32
+
+            orientation: ListView.Horizontal
+
+            model: canvas.tools
+            delegate: Button {
+                text: modelData.name
+                down: canvas.currentTool === modelData
+                onClicked: {
+                    if (!down) {
+                        canvas.currentTool = modelData
+                    } else {
+                        toolSettingsPopup.openForTool(modelData)
+                    }
+                }
+            }
+        }
     }
 
     PdfParser {
@@ -78,6 +106,6 @@ Window {
 
     Settings {
         id: settings
-        property alias file: parser.file
+        property alias file: fileField.text
     }
 }

@@ -15,11 +15,13 @@ qt_add_executable(appNoteMama
 )
 
 target_include_directories(appNoteMama PRIVATE scene/canvas)
+target_include_directories(appNoteMama PRIVATE scene/canvas/tools)
 target_include_directories(appNoteMama PRIVATE scene/parsers)
 qt_add_qml_module(appNoteMama
     URI NoteMama
     VERSION 1.0
     QML_FILES Main.qml
+    QML_FILES ToolSettingsPopup.qml
     SOURCES scene/scene.h scene/scene.cpp
     SOURCES scene/items/sceneitem.h scene/items/sceneitem.cpp
     SOURCES scene/items/vectorpathsceneitem.h scene/items/vectorpathsceneitem.cpp
