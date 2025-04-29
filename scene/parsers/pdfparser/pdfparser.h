@@ -11,6 +11,9 @@
 #include "custombuffer.hpp"
 #include "customtypespdf.h"
 
+#include "scene/items/vectorpathsceneitem.h"
+#include "scene/scene.h"
+
 #include <QVector2D>
 #include <QList>
 #include <QtGlobal>
@@ -30,6 +33,7 @@ class pdfparser{
     std::vector<uint8_t>::iterator iter;
     std::vector<uint8_t>::iterator end;
 
+
     void setfilename(std::string filename) { this->filename = filename; }
     int  decompress(std::vector<uint8_t>& data);
     void transformation(std::vector<uint8_t>& data, size_t sizearr);
@@ -39,11 +43,9 @@ public:
     double whiledecompress = 0;
     double whileread = 0;
     double whilepars = 0;
-    QList<DrawingType*> drawingcommands;
 	pdfparser(std::string filename = "");
 	void readfiles(std::vector<std::string> files);
-	void print();
-	long sizet() const { return drawingcommands.size(); }
+    QList<VectorPathSceneItem*> m_parseritem;
 	~pdfparser();
 };
 

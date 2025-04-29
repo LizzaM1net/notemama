@@ -39,11 +39,11 @@ void CanvasRenderer::initialize(QRhiCommandBuffer *cb) {
         });
         QRhiVertexInputLayout inputLayout;
         inputLayout.setBindings({
-            { 5 * sizeof(float) }
+            { 6 * sizeof(float) }
         });
         inputLayout.setAttributes({
             { 0, 0, QRhiVertexInputAttribute::Float2, 0 },
-            { 0, 1, QRhiVertexInputAttribute::Float3, 2 * sizeof(float) }
+            { 0, 1, QRhiVertexInputAttribute::Float4, 2 * sizeof(float) }
         });
 
         m_pipeline->setSampleCount(4);
@@ -53,6 +53,9 @@ void CanvasRenderer::initialize(QRhiCommandBuffer *cb) {
         // m_pipeline->setTopology(QRhiGraphicsPipeline::LineStrip);
         m_pipeline->setTopology(QRhiGraphicsPipeline::TriangleStrip);
         m_pipeline->setLineWidth(3.f);
+        QRhiGraphicsPipeline::TargetBlend blend;
+        blend.enable = true;
+        m_pipeline->setTargetBlends({blend});
         m_pipeline->create();
     }
 }

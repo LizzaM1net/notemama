@@ -10,17 +10,19 @@
 class QRhiBuffer;
 
 struct ColorVector2D {
-    ColorVector2D(QVector2D point, float red, float green, float blue)
+    ColorVector2D(QVector2D point, float red, float green, float blue, float alpha = 1)
         : point(point)
         , red(red)
         , green(green)
-        , blue(blue) {}
+        , blue(blue)
+        , alpha(alpha) {}
 
     ColorVector2D(QVector2D point, QColor color)
         : point(point)
         , red(color.redF())
         , green(color.greenF())
-        , blue(color.blueF()) {}
+        , blue(color.blueF())
+        , alpha(color.alphaF()){}
 
     ColorVector2D operator+(QVector2D vec) {
         return ColorVector2D(point+vec, red, green, blue);
@@ -31,7 +33,7 @@ struct ColorVector2D {
     }
 
     QVector2D point;
-    float red, green, blue;
+    float red, green, blue, alpha;
 };
 
 namespace VectorPath {

@@ -4,6 +4,9 @@
 
 #include "items/spinnersceneitem.h"
 #include "items/vectorpathsceneitem.h"
+#include "items/pointsceneitem.h"
+
+#include "nddgenerator/nddgenerator.h"
 
 SceneObserver::SceneObserver() {}
 
@@ -42,7 +45,12 @@ Scene::Scene() {
     addItem(new VectorPathSceneItem(QVector2D{60, 60+200}, {new VectorPath::CubicCurveSegment(QVector2D{0, -110}, QVector2D{90, -200}, QVector2D{200, -200}),
                                                                new VectorPath::CubicCurveSegment(QVector2D{110, 0}, QVector2D{200, 90}, QVector2D{200, 200})}));
 
-    addItem(new SpinnerSceneItem());
+
+    nddgenerator generator(10000);
+    generator.generate();
+    for (int i = 0; i < 10000; ++i) {
+        addItem(new PointSceneItem(*generator.normaldata[i]));
+    }
 
 }
 

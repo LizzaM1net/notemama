@@ -7,16 +7,6 @@ pdfparser::pdfparser(std::string filename)
 {
 }
 
-
-void pdfparser::print()
-{
-    for (auto& c : drawingcommands)
-    {
-        c->print();
-    }
-}
-
-
 void pdfparser::readxreftable(std::ifstream& file, long long pos)
 {
     file.seekg(pos, std::ios::beg);
@@ -130,7 +120,14 @@ void pdfparser::transformation(std::vector<uint8_t>& decompressed_data, size_t s
     iter = decompressed_data.begin();
     end = decompressed_data.begin() + sizearr - 1;
     std::stack<long double> stack;
+    QVector2D cur_point{0,0};
+    if (m_parseritem.size() == 0)
+    {
+        m_parseritem << new VectorPathSceneItem{cur_point, {}};
+    }
+
     std::string num = "";
+
     while (iter != end)
     {
         if (*iter >= 48  && *iter <= 57){
@@ -147,39 +144,48 @@ void pdfparser::transformation(std::vector<uint8_t>& decompressed_data, size_t s
                 list[i] = stack.top();
                 stack.pop();
             }
-            drawingcommands.push_back(new CMatrix(CMatrixTransfrom, list));
             iter+=2;
         }else if (*iter == 'm' && iter != decompressed_data.begin() && *(iter-1) == ' ' && !(*(iter+1) >= 97 &&   *(iter+1) <= 122))
         {
-            QVector2D point;
-            point.setY(stack.top());
+            cur_point.setY(860 - stack.top());
             stack.pop();
-            point.setX(stack.top());
+            cur_point.setX(stack.top());
             stack.pop();
-            drawingcommands.push_back(new Move{MoveTo, point});
-
+            m_parseritem << new VectorPathSceneItem{cur_point, {}};
         }else if(*iter == 'c' && *(iter-1) == ' ' && !(*(iter+1) >= 97 &&   *(iter+1) <= 122) && stack.size() >= 6)
         {
             QList<QVector2D> list(3);
             for (int i = 2; i >= 0; --i)
             {
-                list[i].setY(stack.top());
+
+                QVector2D bufpoint;
+                list[i].setY(860 - stack.top());
                 stack.pop();
                 list[i].setX(stack.top());
                 stack.pop();
             }
-            drawingcommands.push_back(new CubicBezier{CubicBezierTo, list});
+
+
+            for (int i = 0; i < 3; ++i)
+            {
+                QVector2D buf = list[i];
+                list[i] = list[i] - cur_point;
+                cur_point = buf;
+            }
+
+            m_parseritem.last()->segments << new VectorPath::CubicCurveSegment{list[0], list[1], list[2]};
+
         }else if(*iter == 'l' && *(iter-1) == ' ' && !(*(iter+1) >= 97 &&   *(iter+1) <= 122) && stack.size() >= 2)
         {
             QVector2D point;
-            point.setY(stack.top());
+            point.setY(860 - stack.top());
             stack.pop();
             point.setX(stack.top());
             stack.pop();
-            drawingcommands.push_back(new Line{LineTo, point});
+            m_parseritem.last()->segments << new VectorPath::LineSegment{point - cur_point};
+            cur_point = point;
         }else if (*iter == 'q' && *(iter - 1) == ' ')
         {
-            drawingcommands.push_back(new Quit{QuitTo});
         }
         if (iter != end) ++iter;
     }

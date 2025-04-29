@@ -26,6 +26,7 @@ qt_add_qml_module(appNoteMama
     SOURCES scene/items/sceneitem.h scene/items/sceneitem.cpp
     SOURCES scene/items/vectorpathsceneitem.h scene/items/vectorpathsceneitem.cpp
     SOURCES scene/items/spinnersceneitem.h scene/items/spinnersceneitem.cpp
+    SOURCES scene/items/pointsceneitem.h scene/items/pointsceneitem.cpp
     SOURCES scene/canvas/canvas.h scene/canvas/canvas.cpp
     SOURCES scene/canvas/canvasrenderer.h scene/canvas/canvasrenderer.cpp
     SOURCES scene/canvas/tools/tool.h scene/canvas/tools/tool.cpp
@@ -38,6 +39,7 @@ qt_add_qml_module(appNoteMama
     SOURCES scene/parsers/pdfparser/customfunction.h scene/parsers/pdfparser/customfunction.cpp
     SOURCES scene/parsers/pdfparser/custombuffer.hpp scene/parsers/pdfparser/custombuffer.cpp
     SOURCES scene/parsers/pdfparser/customtypespdf.h scene/parsers/pdfparser/customtypespdf.cpp
+    SOURCES scene/nddgenerator/nddgenerator.h scene/nddgenerator/nddgenerator.cpp
 )
 
 qt_add_shaders(appNoteMama "appNoteMama_shaders"

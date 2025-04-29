@@ -104,6 +104,7 @@ Window {
         file: fileField.text
     }
 
+
     Settings {
         id: settings
         property alias file: fileField.text
