@@ -169,9 +169,9 @@ void CurvePenTool::mouseMove(QVector2D position)
         m_pathItem->segments << m_segment;
     }
     // m_pathItem->startPoint = curve[0];
-    m_segment->relB = curve[1];
-    m_segment->relC = curve[3]-curve[0]+curve[2];
-    m_segment->relD = curve[3]-curve[0];
+    m_segment->b = curve[0]+curve[1];
+    m_segment->c = curve[3]+curve[2];
+    m_segment->d = curve[3];
     m_pathItem->setNeedsSync();
 
     // s_rawPathItem->segments << new VectorPath::LineSegment(position-s_rawPathLastPos);

@@ -48,9 +48,6 @@ private:
 
     bool m_fakePressed = false;
 
-    QVector2D m_lastPoint;
-    // int m_tapCount = 0;
-
     VectorPathSceneItem *m_trailItem = nullptr;
 };
 

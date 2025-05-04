@@ -31,19 +31,19 @@ void SceneObserver::removeObservedScene(Scene *scene) {
 
 Scene::Scene() {
 
-    addItem(new VectorPathSceneItem(QVector2D{-10, 0}, {new VectorPath::LineSegment(QVector2D{10, 10}),
-                                                                        new VectorPath::LineSegment(QVector2D{10, -10}),
-                                                                        new VectorPath::LineSegment(QVector2D{-10, -10}),
-                                                                        new VectorPath::LineSegment(QVector2D{-10, 10})}));
+    addItem(new VectorPathSceneItem(QVector2D{-10, 0}, {new VectorPath::LineSegment(QVector2D{0, 10}),
+                                                                        new VectorPath::LineSegment(QVector2D{10, 0}),
+                                                                        new VectorPath::LineSegment(QVector2D{0, -10}),
+                                                                        new VectorPath::LineSegment(QVector2D{-10, 0})}));
 
-    addItem(new VectorPathSceneItem(QVector2D{10, 10+200}, {new VectorPath::QuadCurveSegment(QVector2D{0, -200}, QVector2D{200, -200}),
-                                                               new VectorPath::LineSegment(QVector2D{100, 0}),
-                                                               new VectorPath::LineSegment(QVector2D{20, 20}),
-                                                               new VectorPath::LineSegment(QVector2D{-20, 20}),
-                                                               new VectorPath::QuadCurveSegment(QVector2D{200, 0}, QVector2D{200, 200})}));
+    addItem(new VectorPathSceneItem(QVector2D{10, 10+200}, {new VectorPath::QuadCurveSegment(QVector2D{10, 10}, QVector2D{10+200, 10}),
+                                                               new VectorPath::LineSegment(QVector2D{10+300, 10}),
+                                                               new VectorPath::LineSegment(QVector2D{10+320, 10+20}),
+                                                               new VectorPath::LineSegment(QVector2D{10+300, 10+40}),
+                                                               new VectorPath::QuadCurveSegment(QVector2D{10+500, 10+40}, QVector2D{10+500, 10+240})}));
 
-    addItem(new VectorPathSceneItem(QVector2D{60, 60+200}, {new VectorPath::CubicCurveSegment(QVector2D{0, -110}, QVector2D{90, -200}, QVector2D{200, -200}),
-                                                               new VectorPath::CubicCurveSegment(QVector2D{110, 0}, QVector2D{200, 90}, QVector2D{200, 200})}));
+    addItem(new VectorPathSceneItem(QVector2D{60, 60+200}, {new VectorPath::CubicCurveSegment(QVector2D{60, 60+90}, QVector2D{60+90, 60}, QVector2D{60+200, 60}),
+                                                               new VectorPath::CubicCurveSegment(QVector2D{60+310, 60}, QVector2D{60+400, 60+90}, QVector2D{60+400, 60+200})}));
 
 
     nddgenerator generator(10000);

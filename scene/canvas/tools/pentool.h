@@ -20,7 +20,6 @@ public:
 
 private:
     VectorPathSceneItem *m_pathItem = nullptr;
-    QVector2D m_lastPoint;
 };
 
 #endif // PENTOOL_H

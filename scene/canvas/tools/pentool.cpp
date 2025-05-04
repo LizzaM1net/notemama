@@ -9,14 +9,12 @@ PenTool::PenTool(Canvas *canvas)
 void PenTool::mousePress(QVector2D position)
 {
     m_pathItem = new VectorPathSceneItem(position, {});
-    m_lastPoint = position;
     m_canvas->currentScene()->addItem(m_pathItem);
 }
 
 void PenTool::mouseMove(QVector2D position)
 {
-    m_pathItem->segments << new VectorPath::LineSegment(position-m_lastPoint);
-    m_lastPoint = position;
+    m_pathItem->segments << new VectorPath::LineSegment(position);
     m_pathItem->setNeedsSync();
 }
 

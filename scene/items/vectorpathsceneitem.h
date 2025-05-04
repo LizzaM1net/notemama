@@ -42,46 +42,46 @@ namespace VectorPath {
         virtual ~Segment();
 
         virtual QList<ColorVector2D> generateVertices(QVector2D startPoint, float lineWidth) const = 0;
-        virtual QVector2D lastPoint(QVector2D startPoint) const = 0;
+        virtual QVector2D lastPoint() const = 0;
 
-        virtual QVector2D inTangent() const = 0;
-        virtual QVector2D outTangent() const = 0;
+        virtual QVector2D inTangent(QVector2D startPoint) const = 0;
+        virtual QVector2D outTangent(QVector2D startPoint) const = 0;
     };
 
     struct LineSegment : public Segment {
-        LineSegment(QVector2D relEnd);
+        LineSegment(QVector2D end);
 
         QList<ColorVector2D> generateVertices(QVector2D startPoint, float lineWidth) const override;
-        QVector2D lastPoint(QVector2D startPoint) const override;
+        QVector2D lastPoint() const override;
 
-        QVector2D inTangent() const override;
-        QVector2D outTangent() const override;
+        QVector2D inTangent(QVector2D startPoint) const override;
+        QVector2D outTangent(QVector2D startPoint) const override;
 
-        QVector2D relEnd;
+        QVector2D end;
     };
 
     struct QuadCurveSegment : public Segment {
-        QuadCurveSegment(QVector2D relB, QVector2D relC);
+        QuadCurveSegment(QVector2D b, QVector2D c);
 
         QList<ColorVector2D> generateVertices(QVector2D startPoint, float lineWidth) const override;
-        QVector2D lastPoint(QVector2D startPoint) const override;
+        QVector2D lastPoint() const override;
 
-        QVector2D inTangent() const override;
-        QVector2D outTangent() const override;
+        QVector2D inTangent(QVector2D startPoint) const override;
+        QVector2D outTangent(QVector2D startPoint) const override;
 
-        QVector2D relB, relC;
+        QVector2D b, c;
     };
 
     struct CubicCurveSegment : public Segment {
-        CubicCurveSegment(QVector2D relB, QVector2D relC, QVector2D relD);
+        CubicCurveSegment(QVector2D b, QVector2D c, QVector2D d);
 
         QList<ColorVector2D> generateVertices(QVector2D startPoint, float lineWidth) const override;
-        QVector2D lastPoint(QVector2D startPoint) const override;
+        QVector2D lastPoint() const override;
 
-        QVector2D inTangent() const override;
-        QVector2D outTangent() const override;
+        QVector2D inTangent(QVector2D startPoint) const override;
+        QVector2D outTangent(QVector2D startPoint) const override;
 
-        QVector2D relB, relC, relD;
+        QVector2D b, c, d;
     };
 }
 

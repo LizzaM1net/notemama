@@ -17,15 +17,11 @@ void FakeDrawTool::mousePress(QVector2D position)
         if (m_clickAsMove)
             m_fakePressed = true;
     }
-
-    m_lastPoint = position;
 }
 
 void FakeDrawTool::mouseMove(QVector2D position) {
-    if (!m_clickAsMove && m_realTool) {
+    if (!m_clickAsMove && m_realTool)
         simulateMove(position);
-        m_lastPoint = position;
-    }
 }
 
 void FakeDrawTool::mouseRelease() {
@@ -47,8 +43,9 @@ void FakeDrawTool::setRealTool(Tool *realTool) {
     }
 
     if (m_fakePressed) {
-        m_realTool->mouseRelease();
-        realTool->mousePress(m_lastPoint);
+        if (m_realTool)
+            m_realTool->mouseRelease();
+        m_fakePressed = false;
     }
 
     m_realTool = realTool;
@@ -101,7 +98,7 @@ void FakeDrawTool::simulateMove(QVector2D position) {
 
     if (m_drawTrail) {
         if (m_trailItem) {
-            m_trailItem->segments << new VectorPath::LineSegment(position-m_lastPoint);
+            m_trailItem->segments << new VectorPath::LineSegment(position);
             m_trailItem->setNeedsSync();
         } else
             createTrailItem(position);
