@@ -4,6 +4,8 @@
 
 SceneItem::SceneItem() {}
 
+SceneItem::~SceneItem() {}
+
 bool SceneItem::trySync() {
     if (m_needsSync) {
         m_needsSync = false;

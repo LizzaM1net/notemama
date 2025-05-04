@@ -182,12 +182,12 @@ QQuickRhiItemRenderer *Canvas::createRenderer() {
 }
 
 void Canvas::mousePressEvent(QMouseEvent *event) {
-    QVector2D point = QVector2D(event->points().first().position())/m_scale+m_position;
+    QVector2D point = QVector2D(event->position())/m_scale+m_position;
     m_currentTool->mousePress(point);
 }
 
 void Canvas::mouseMoveEvent(QMouseEvent *event) {
-    QVector2D point = QVector2D(event->points().first().position())/m_scale+m_position;
+    QVector2D point = QVector2D(event->position())/m_scale+m_position;
     m_currentTool->mouseMove(point);
 }
 

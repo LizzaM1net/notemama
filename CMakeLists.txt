@@ -14,6 +14,7 @@ qt_add_executable(appNoteMama
     main.cpp
 )
 
+target_include_directories(appNoteMama PRIVATE scene)
 target_include_directories(appNoteMama PRIVATE scene/canvas)
 target_include_directories(appNoteMama PRIVATE scene/canvas/tools)
 target_include_directories(appNoteMama PRIVATE scene/parsers)

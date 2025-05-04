@@ -3,6 +3,10 @@
 #include <QDebug>
 #include <rhi/qrhi.h>
 
+VectorPath::Segment::Segment() {}
+
+VectorPath::Segment::~Segment() {}
+
 VectorPath::LineSegment::LineSegment(QVector2D relEnd)
     : relEnd(relEnd)
 {

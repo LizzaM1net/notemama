@@ -38,6 +38,9 @@ struct ColorVector2D {
 
 namespace VectorPath {
     struct Segment {
+        Segment();
+        virtual ~Segment();
+
         virtual QList<ColorVector2D> generateVertices(QVector2D startPoint, float lineWidth) const = 0;
         virtual QVector2D lastPoint(QVector2D startPoint) const = 0;
 

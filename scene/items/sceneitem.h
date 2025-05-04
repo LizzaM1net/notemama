@@ -13,6 +13,7 @@ class Scene;
 class SceneItem {
 public:
     SceneItem();
+    virtual ~SceneItem();
 
     virtual void synchronize(QRhi *rhi, QRhiResourceUpdateBatch *updateBatch) = 0;
     virtual void render(QRhiCommandBuffer *cb) = 0;
