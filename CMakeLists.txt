@@ -18,6 +18,7 @@ target_include_directories(appNoteMama PRIVATE scene)
 target_include_directories(appNoteMama PRIVATE scene/canvas)
 target_include_directories(appNoteMama PRIVATE scene/canvas/tools)
 target_include_directories(appNoteMama PRIVATE scene/parsers)
+target_include_directories(appNoteMama PRIVATE scene/canvas/background)
 qt_add_qml_module(appNoteMama
     URI NoteMama
     VERSION 1.0
@@ -35,12 +36,11 @@ qt_add_qml_module(appNoteMama
     SOURCES scene/canvas/tools/curvepentool.h scene/canvas/tools/curvepentool.cpp
     SOURCES scene/canvas/tools/fakedrawtool.h scene/canvas/tools/fakedrawtool.cpp
     SOURCES scene/parsers/pdfparserdeclarative.h scene/parsers/pdfparserdeclarative.cpp
-    SOURCES scene/parsers/pdfparser/pdfparser.h scene/parsers/pdfparser/pdfparser.cpp
-    SOURCES scene/parsers/pdfparser/pdfparsererror.h scene/parsers/pdfparser/pdfparsererror.cpp
-    SOURCES scene/parsers/pdfparser/customfunction.h scene/parsers/pdfparser/customfunction.cpp
-    SOURCES scene/parsers/pdfparser/custombuffer.hpp scene/parsers/pdfparser/custombuffer.cpp
-    SOURCES scene/parsers/pdfparser/customtypespdf.h scene/parsers/pdfparser/customtypespdf.cpp
+    SOURCES scene/parsers/pdfparser2/src/pdfparser.h scene/parsers/pdfparser2/src/pdfparser.cpp
+    SOURCES scene/parsers/pdfparser2/src/custombuffer/custombuffer.hpp scene/parsers/pdfparser2/src/custombuffer/custombuffer.cpp
+    SOURCES scene/parsers/pdfparser2/src/customfunctions/customfunction.h SOURCES scene/parsers/pdfparser2/src/customfunctions/customfunction.cpp
     SOURCES scene/nddgenerator/nddgenerator.h scene/nddgenerator/nddgenerator.cpp
+    SOURCES scene/canvas/background/background.h scene/canvas/background/background.cpp
 )
 
 qt_add_shaders(appNoteMama "appNoteMama_shaders"
@@ -51,6 +51,8 @@ qt_add_shaders(appNoteMama "appNoteMama_shaders"
     FILES
         shaders/color.vert
         shaders/color.frag
+        shaders/background.vert
+        shaders/background.frag
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

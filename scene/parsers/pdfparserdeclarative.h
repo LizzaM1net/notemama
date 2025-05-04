@@ -4,8 +4,9 @@
 #include <QObject>
 #include <QUrl>
 #include <qqmlintegration.h>
+#include <QVector2D>
 
-#include "pdfparser/pdfparser.h"
+#include "pdfparser2/src//pdfparser.h"
 
 class Scene;
 class VectorPathSceneItem;
@@ -36,7 +37,8 @@ private:
     Scene *m_scene = nullptr;
     QVector2D m_lastPoint;
     VectorPathSceneItem *m_currentItem = nullptr;
-    pdfparser m_parser;
+    PdfParser m_parser;
+    // pdfparser m_parser;
     QString m_file;
 };
 

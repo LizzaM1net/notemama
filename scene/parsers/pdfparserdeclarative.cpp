@@ -1,6 +1,8 @@
 #include "pdfparserdeclarative.h"
 
 #include <QDebug>
+#include <QFile>
+
 
 #include "scene/items/vectorpathsceneitem.h"
 #include "scene/scene.h"
@@ -36,11 +38,16 @@ void PdfParserDeclarative::setFile(const QString &newFile) {
 }
 
 void PdfParserDeclarative::reparse() {
-    if (m_file.isEmpty() || m_scene == nullptr)
-        return;
+    // if (m_file.isEmpty() || m_scene == nullptr)
+    //     return;
 
-    m_parser.readfiles({"/Users/mac/project/notemama/scene/parsers/pdfparser/test1.pdf"});
-    for (const auto& item : m_parser.m_parseritem)
+
+    m_parser.readfiles({"/Users/mac/pr/notemama/scene/parsers/pdfparser2/src/test3.pdf"});
+    m_parser.decompress_refs();
+
+    qDebug() << m_parser.items.size();
+
+    for (const auto& item : m_parser.items)
     {
         m_scene->addItem(item);
     }

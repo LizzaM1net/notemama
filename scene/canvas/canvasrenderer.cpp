@@ -16,10 +16,46 @@ static QShader getShader(const QString &name) {
     return f.open(QIODevice::ReadOnly) ? QShader::fromSerialized(f.readAll()) : QShader();
 }
 
+void CanvasRenderer::setupPipeline(QRhiGraphicsPipeline* pipeline,
+                                   const QShader& vs,
+                                   const QShader& fs,
+                                   QRhiShaderResourceBindings* srb,
+                                   const QRhiVertexInputLayout& layout)
+{
+    pipeline->setTopology(QRhiGraphicsPipeline::TriangleStrip);
+    pipeline->setShaderStages({
+        { QRhiShaderStage::Vertex,  vs},
+        { QRhiShaderStage::Fragment, fs}
+    });
+    pipeline->setVertexInputLayout(layout);
+    pipeline->setShaderResourceBindings(srb);
+    pipeline->setRenderPassDescriptor(renderTarget()->renderPassDescriptor());
+    pipeline->setSampleCount(4);
+}
+
 void CanvasRenderer::initialize(QRhiCommandBuffer *cb) {
     if (m_rhi != rhi()) {
         m_rhi = rhi();
         m_pipeline.reset();
+        m_background.reset();
+    }
+
+    if (!m_background)
+    {
+        m_background = std::make_unique<Background>();
+        qDebug() << m_background->create(m_rhi);
+
+        QRhiVertexInputLayout bgLayout;
+        bgLayout.setBindings({ { 2 * sizeof(float) } });
+        bgLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float2, 0 } });
+
+        setupPipeline(m_background->m_backgroundpipline.get(),
+                      getShader(QLatin1String(":/shaders/background.vert.qsb")),
+                      getShader(QLatin1String(":/shaders/background.frag.qsb")),
+                      m_background->m_backgroundsrb.get(),
+                      bgLayout);
+
+        m_background->m_backgroundpipline->create();
     }
 
     if (!m_pipeline) {
@@ -33,10 +69,6 @@ void CanvasRenderer::initialize(QRhiCommandBuffer *cb) {
         m_srb->create();
 
         m_pipeline.reset(m_rhi->newGraphicsPipeline());
-        m_pipeline->setShaderStages({
-            { QRhiShaderStage::Vertex, getShader(QLatin1String(":/shaders/color.vert.qsb")) },
-            { QRhiShaderStage::Fragment, getShader(QLatin1String(":/shaders/color.frag.qsb")) }
-        });
         QRhiVertexInputLayout inputLayout;
         inputLayout.setBindings({
             { 6 * sizeof(float) }
@@ -46,12 +78,12 @@ void CanvasRenderer::initialize(QRhiCommandBuffer *cb) {
             { 0, 1, QRhiVertexInputAttribute::Float4, 2 * sizeof(float) }
         });
 
-        m_pipeline->setSampleCount(4);
-        m_pipeline->setVertexInputLayout(inputLayout);
-        m_pipeline->setShaderResourceBindings(m_srb.get());
-        m_pipeline->setRenderPassDescriptor(renderTarget()->renderPassDescriptor());
-        // m_pipeline->setTopology(QRhiGraphicsPipeline::LineStrip);
-        m_pipeline->setTopology(QRhiGraphicsPipeline::TriangleStrip);
+        setupPipeline(m_pipeline.get(),
+                      getShader(QLatin1String(":/shaders/color.vert.qsb")),
+                      getShader(QLatin1String(":/shaders/color.frag.qsb")),
+                      m_srb.get(),
+                      inputLayout);
+
         m_pipeline->setLineWidth(3.f);
         QRhiGraphicsPipeline::TargetBlend blend;
         blend.enable = true;
@@ -78,6 +110,9 @@ void CanvasRenderer::synchronize(QQuickRhiItem *item) {
     if (!m_updateBatch)
         m_updateBatch = m_rhi->nextResourceUpdateBatch();
 
+    QMatrix4x4 mat = m_rhi->clipSpaceCorrMatrix();
+    m_updateBatch->updateDynamicBuffer(m_background->m_backgroundubuf.get(),0, 64, mat.constData());
+
     for (int i = 0; i < m_scene->items.size(); i++) {
         QRectF itemRect = m_scene->items[i]->boundingRect();
         if ((itemRect.isEmpty() || m_viewRect.intersects(itemRect)) && m_scene->items[i]->trySync())
@@ -86,12 +121,34 @@ void CanvasRenderer::synchronize(QQuickRhiItem *item) {
 }
 
 void CanvasRenderer::render(QRhiCommandBuffer *cb) {
-    const QColor clearColor = QColor::fromRgbF(1.f, 1.f, 1.f, 1.f);
+    const QColor clearColor = Qt::transparent;
+
+
+    float bgVertices[] = {
+        -1.0f,  1.0f,
+        -1.0f, -1.0f,
+        1.0f,  1.0f,
+        1.0f, -1.0f
+    };
+
+    m_tempVertexBuffer.reset(m_rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::VertexBuffer, sizeof(bgVertices)));
+    m_tempVertexBuffer->create();
+    m_updateBatch->updateDynamicBuffer(m_tempVertexBuffer.get(), 0, sizeof(bgVertices), bgVertices);
+
     cb->beginPass(renderTarget(), clearColor, { 1.0f, 0 }, m_updateBatch);
-    if (m_updateBatch)
-        m_updateBatch = nullptr;
 
     QMetaObject::invokeMethod(m_item, &Canvas::setLastCompletedTime, Qt::QueuedConnection, cb->lastCompletedGpuTime());
+
+    cb->setGraphicsPipeline(m_background->m_backgroundpipline.get());
+    cb->setShaderResources(m_background->m_backgroundsrb.get());
+    cb->setViewport({ 0, 0, float(renderTarget()->pixelSize().width()), float(renderTarget()->pixelSize().height()) });
+
+
+    QRhiCommandBuffer::VertexInput vertexBindings[] = {
+        { m_tempVertexBuffer.get(), 0 }
+    };
+    cb->setVertexInput(0, 1, vertexBindings);
+    cb->draw(4);
 
     cb->setGraphicsPipeline(m_pipeline.get());
     cb->setShaderResources();
@@ -103,4 +160,5 @@ void CanvasRenderer::render(QRhiCommandBuffer *cb) {
     }
 
     cb->endPass();
+    m_updateBatch = nullptr;
 }

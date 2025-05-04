@@ -138,8 +138,8 @@ QList<ColorVector2D> VectorPathSceneItem::generateVertices()
         dot = qMax(dot, 4*m_lineWidth);
         normal /= dot;
 
-        points << ColorVector2D(point, Qt::black) - m_lineWidth*normal
-               << ColorVector2D(point, Qt::black) + m_lineWidth*normal;
+        points << ColorVector2D(point, Qt::white) - m_lineWidth*normal
+               << ColorVector2D(point, Qt::white) + m_lineWidth*normal;
 
         points << segment->generateVertices(point, m_lineWidth);
         prevOutTangent = segment->outTangent(point);
