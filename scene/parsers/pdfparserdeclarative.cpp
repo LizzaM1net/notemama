@@ -38,12 +38,9 @@ void PdfParserDeclarative::setFile(const QString &newFile) {
 }
 
 void PdfParserDeclarative::reparse() {
-    // if (m_file.isEmpty() || m_scene == nullptr)
-    //     return;
 
-
-    m_parser.readfiles({"/Users/mac/pr/notemama/scene/parsers/pdfparser2/src/test3.pdf"});
     m_parser.decompress_refs();
+    m_parser.readfiles({"/Users/mac/pr/notemama/scene/parsers/pdfparser2/src/test3.pdf"});
 
     qDebug() << m_parser.items.size();
 

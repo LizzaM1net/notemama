@@ -117,10 +117,7 @@ void PdfParser::decompress(std::vector<uint8_t>& data)
     stream.zfree = Z_NULL;
     stream.opaque = Z_NULL;
     if (inflateInit(&stream) != Z_OK)
-    {
-        qDebug() << "no";
         return;
-    }
 
     size_t CHUNK_SIZE = data.size()*4;
     std::vector<unsigned char> decompressed_data(data.size());
@@ -134,9 +131,7 @@ void PdfParser::decompress(std::vector<uint8_t>& data)
         stream.avail_out = CHUNK_SIZE;
         ret = inflate(&stream, Z_NO_FLUSH);
         if (ret != Z_OK && ret != Z_STREAM_END)
-        {
             return;
-        }
     } while (ret != Z_STREAM_END);
 
 
@@ -144,14 +139,6 @@ void PdfParser::decompress(std::vector<uint8_t>& data)
 
     if (CustomFunction::customsearch_beg(it, it + 100, "begincmap") != it + 100)
         return;
-
-
-
-    std::ofstream out("/Users/mac/pr/notemama/t.txt", std::ios::app);
-    out << std::string(decompressed_data.begin(), decompressed_data.end()) << std::endl;
-    out.close();
-
-
 
     transformation(decompressed_data, stream.total_out);
     inflateEnd(&stream);
@@ -189,7 +176,8 @@ void PdfParser::transformation(std::vector<uint8_t>& decompressed_data, size_t s
             num = "";
         }else if (*iter == 'c' && *(iter + 1) == 'm' && *(iter - 1) == ' '){
             iter+=2;
-        }else if (*iter == 'm'  && *(iter-1) == ' '&& stack.size() >= 2)
+            while(!stack.empty()) stack.pop();
+        }else if (*iter == 'm' && stack.size() >= 2)
         {
             items << new VectorPathSceneItem(getpoint(stack) + dif, {});
         }else if(*iter == 'c' && *(iter-1) == ' ' && stack.size() >= 6)
@@ -197,19 +185,17 @@ void PdfParser::transformation(std::vector<uint8_t>& decompressed_data, size_t s
             QVector2D p3 = getpoint(stack);
             QVector2D p2 = getpoint(stack);
             QVector2D p1 = getpoint(stack);
-
             if (!items.isEmpty()) items.last()->segments << new VectorPath::CubicCurveSegment{p1 + dif, p2 + dif, p3 + dif};
+            while(!stack.empty()) stack.pop();
         }else if(*iter == 'l' && *(iter-1) == ' ' && stack.size() >= 2)
         {
-          //  if (!items.isEmpty()) items.last()->segments << new VectorPath::LineSegment{getpoint(stack) + dif};
+            // if (!items.isEmpty()) items.last()->segments << new VectorPath::LineSegment{getpoint(stack) + dif};
         }else if (*iter == 'q')
         {
             while(!stack.empty()) stack.pop();
         }
         if (iter != end) ++iter;
     }
-
-  //   dif.setY(dif.y() + page_size.y());
 }
 
 void PdfParser::parsfile()
