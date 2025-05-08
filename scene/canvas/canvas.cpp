@@ -10,6 +10,7 @@
 Canvas::Canvas()
     : QQuickRhiItem()
     , SceneObserver() {
+    // It anyways will be overriden by touch handlers
     setAcceptedMouseButtons(Qt::AllButtons);
 
     setScene(new Scene());
@@ -182,16 +183,31 @@ QQuickRhiItemRenderer *Canvas::createRenderer() {
 }
 
 void Canvas::mousePressEvent(QMouseEvent *event) {
+    if (event->buttons() & Qt::MiddleButton) {
+        event->ignore();
+        return;
+    }
+
     QVector2D point = QVector2D(event->position())/m_scale+m_position;
     m_currentTool->mousePress(point);
 }
 
 void Canvas::mouseMoveEvent(QMouseEvent *event) {
+    if (event->buttons() & Qt::MiddleButton) {
+        event->ignore();
+        return;
+    }
+
     QVector2D point = QVector2D(event->position())/m_scale+m_position;
     m_currentTool->mouseMove(point);
 }
 
 void Canvas::mouseReleaseEvent(QMouseEvent *event) {
+    if (event->buttons() & Qt::MiddleButton) {
+        event->ignore();
+        return;
+    }
+
     m_currentTool->mouseRelease();
 }
 

@@ -21,21 +21,39 @@ Window {
             target: null
 
             onTranslationChanged: (delta) => {
-                if (delta.x != 0) {
-                    // print("translation", delta)
+                if (delta.x != 0)
                     canvas.transformOrigin = delta
-                }
             }
-            // onRotationChanged: (delta) => print("rotation", delta)
-            // onScaleChanged: (delta) => print("scale", delta)
             onScaleChanged: (delta) => canvas.scale *= delta
         }
 
         WheelHandler {
             target: null
             orientation: Qt.Horizontal | Qt.Vertical
-            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+            acceptedDevices: PointerDevice.TouchPad
             onWheel: (event) => canvas.move(event.pixelDelta)
+        }
+
+        WheelHandler {
+            target: null
+            orientation: Qt.Vertical
+            acceptedDevices: PointerDevice.Mouse
+            onWheel: (event) => {
+                canvas.transformOrigin = point.position
+                canvas.scale*=(1.4**(event.angleDelta.y/360))
+            }
+        }
+
+        DragHandler {
+            target: null
+            acceptedButtons: Qt.MiddleButton
+            acceptedDevices: PointerDevice.Mouse
+            property vector2d startPosition
+            onActiveChanged: {
+                if (active)
+                    startPosition = canvas.position
+            }
+            onActiveTranslationChanged: canvas.position = startPosition.minus(activeTranslation.times(1/canvas.scale))
         }
 
         Column {
@@ -98,7 +116,7 @@ Window {
         }
     }
 
-    PdfParser {
+    NoteMama.PdfParser {
         id: parser
         scene: canvas.scene
         file: fileField.text
