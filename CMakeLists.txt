@@ -19,6 +19,7 @@ target_include_directories(appNoteMama PRIVATE scene/canvas)
 target_include_directories(appNoteMama PRIVATE scene/canvas/tools)
 target_include_directories(appNoteMama PRIVATE scene/parsers)
 target_include_directories(appNoteMama PRIVATE scene/canvas/background)
+target_include_directories(appNoteMama PRIVATE scene/remote)
 qt_add_qml_module(appNoteMama
     URI NoteMama
     VERSION 1.0
@@ -41,6 +42,8 @@ qt_add_qml_module(appNoteMama
     SOURCES scene/parsers/pdfparser2/src/customfunctions/customfunction.h SOURCES scene/parsers/pdfparser2/src/customfunctions/customfunction.cpp
     SOURCES scene/nddgenerator/nddgenerator.h scene/nddgenerator/nddgenerator.cpp
     SOURCES scene/canvas/background/background.h scene/canvas/background/background.cpp
+    SOURCES scene/remote/remoteserver.h scene/remote/remoteserver.cpp
+    SOURCES scene/remote/remoteclient.h scene/remote/remoteclient.cpp
 )
 
 qt_add_shaders(appNoteMama "appNoteMama_shaders"

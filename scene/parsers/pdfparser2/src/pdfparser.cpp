@@ -79,7 +79,6 @@ void PdfParser::createrefs(std::ifstream& file, long long ref)
                         } else if (*ptr != ']') ++ptr;
                     }
                     page_size = getpoint(s);
-                    qDebug() << page_size;
 
                     is_set_size = true;
                 }

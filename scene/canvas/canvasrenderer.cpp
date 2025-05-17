@@ -43,11 +43,12 @@ void CanvasRenderer::initialize(QRhiCommandBuffer *cb) {
     if (!m_background)
     {
         m_background = std::make_unique<Background>();
-        qDebug() << m_background->create(m_rhi);
 
         QRhiVertexInputLayout bgLayout;
         bgLayout.setBindings({ { 2 * sizeof(float) } });
         bgLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float2, 0 } });
+
+        m_background->create(m_rhi);
 
         setupPipeline(m_background->m_backgroundpipline.get(),
                       getShader(QLatin1String(":/shaders/background.vert.qsb")),

@@ -122,6 +122,49 @@ Window {
                 }
             }
         }
+
+        RoundButton {
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+
+            icon.name: "network-wireless"
+
+            onClicked: hotspotPopup.open()
+
+            Popup {
+                id: hotspotPopup
+
+                parent: canvas
+
+                anchors.centerIn: parent
+                width: parent.width/2
+                height: parent.height/2
+
+                modal: true
+                focus: true
+                closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+                Column {
+                    SwitchDelegate {
+                        id: serverSwitch
+                        text: "Server"
+                    }
+
+                    ItemDelegate {
+                        text: server.port
+                        visible: server.port
+                    }
+
+                    TextField {
+                        id: urlField
+                    }
+
+                    ItemDelegate {
+                        text: client.connected ? "connected" : "disconnected"
+                    }
+                }
+            }
+        }
     }
 
     NoteMama.PdfParser {
@@ -130,6 +173,17 @@ Window {
         file: fileField.text
     }
 
+    NoteMama.RemoteServer {
+        id: server
+        canvas: canvas
+        enabled: serverSwitch.checked
+    }
+
+    NoteMama.RemoteClient {
+        id: client
+        canvas: canvas
+        url: urlField.text
+    }
 
     Settings {
         id: settings
