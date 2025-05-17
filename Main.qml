@@ -15,7 +15,7 @@ Window {
 
         anchors.fill: parent
 
-        sampleCount: 8
+        // sampleCount: 8
 
         PinchHandler {
             target: null
@@ -24,6 +24,7 @@ Window {
                 if (delta.x != 0)
                     canvas.transformOrigin = delta
             }
+
             onScaleChanged: (delta) => canvas.scale *= delta
         }
 
@@ -58,26 +59,33 @@ Window {
 
         Column {
             Text {
+                color: "white"
                 text: "Drawn in " + (canvas.lastCompletedTime*1000).toFixed(5) + " μs"
             }
             Text {
+                color: "white"
                 text: "Graphics api: " + canvas.graphicsApi
             }
 
             Text {
+                color: "white"
                 text: "Width: " + canvas.width
             }
             Text {
+                color: "white"
                 text: "Height: " + canvas.height
             }
 
             Text {
+                color: "white"
                 text: "Position: " + canvas.position
             }
             Text {
+                color: "white"
                 text: "Scale: " + canvas.scale
             }
             Text {
+                color: "white"
                 text: "Transform origin: " + canvas.transformOrigin
             }
         }

@@ -5,6 +5,7 @@
 #define READ_OFFSET_SIZE 128
 
 #include <vector>
+#include <string>
 
 template<typename T>
 class CustomVector{
