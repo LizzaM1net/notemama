@@ -35,6 +35,7 @@ public:
     ~Scene();
 
     void addItem(SceneItem *item);
+    void removeItem(SceneItem *item);
 
     void sendItemChanged(SceneItem *item);
 

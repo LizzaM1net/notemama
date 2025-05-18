@@ -5,6 +5,7 @@
 #include <vector>
 #include <iterator>
 #include <iostream>
+#include <cstdint>
 #include <string>
 
 namespace CustomFunction {

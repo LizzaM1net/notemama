@@ -44,6 +44,7 @@ qt_add_qml_module(appNoteMama
     SOURCES scene/canvas/background/background.h scene/canvas/background/background.cpp
     SOURCES scene/remote/remoteserver.h scene/remote/remoteserver.cpp
     SOURCES scene/remote/remoteclient.h scene/remote/remoteclient.cpp
+    SOURCES scene/canvas/tools/selecttool.h scene/canvas/tools/selecttool.cpp
 )
 
 qt_add_shaders(appNoteMama "appNoteMama_shaders"

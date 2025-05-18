@@ -1,5 +1,7 @@
 #include "customfunction.h"
 
+#include <cstring>
+
 namespace CustomFunction {
     std::vector<uint8_t>::iterator customsearch_end(std::vector<uint8_t>::iterator start, std::vector<uint8_t>::iterator end, char* str){
         size_t len = std::strlen(str);

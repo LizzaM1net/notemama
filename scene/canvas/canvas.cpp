@@ -6,6 +6,7 @@
 #include "tools/pentool.h"
 #include "tools/curvepentool.h"
 #include "tools/fakedrawtool.h"
+#include "tools/selecttool.h"
 
 Canvas::Canvas()
     : QQuickRhiItem()
@@ -21,6 +22,7 @@ Canvas::Canvas()
     m_tools << new PenTool(this);
     m_tools << new CurvePenTool(this);
     m_tools << new FakeDrawTool(this, m_tools.last());
+    m_tools << new SelectTool(this);
     m_currentTool = m_tools.first();
     emit toolsChanged();
 }

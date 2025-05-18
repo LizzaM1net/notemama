@@ -52,6 +52,15 @@ void Scene::sendItemChanged(SceneItem *item) {
 
 void Scene::addItem(SceneItem *item)
 {
+    if (items.contains(item))
+        return;
+
     item->setScene(this);
     items << item;
+}
+
+void Scene::removeItem(SceneItem *item)
+{
+    item->setScene(nullptr);
+    items.removeOne(item);
 }
