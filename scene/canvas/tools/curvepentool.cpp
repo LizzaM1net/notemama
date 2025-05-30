@@ -103,16 +103,21 @@ QList<QVector2D> leastSquaresFitCurve(QList<QVector2D> points) {
     return curve;
 }
 
+float importanceWeight(float t) {
+    return 4 * t * (1 - t);
+}
+
 CubicCurve leastSquaresFitCurveFixed(QList<QVector2D> points, QList<float> t) {
     int last = points.size()-1;
 
     float A = 0, B = 0, C = 0, D = 0;
     for (int i = 0; i < points.size(); i++) {
+        float w = importanceWeight(t[i]);
         double Bs[4] = { qPow(1-t[i], 3), 3*qPow(1-t[i], 2)*t[i], 3*(1-t[i])*qPow(t[i], 2), qPow(t[i], 3) };
-        A += Bs[1]*Bs[1];
-        B += Bs[1]*Bs[2];
-        C += Bs[2]*Bs[1];
-        D += Bs[2]*Bs[2];
+        A += w*Bs[1]*Bs[1];
+        B += w*Bs[1]*Bs[2];
+        C += w*Bs[2]*Bs[1];
+        D += w*Bs[2]*Bs[2];
     }
 
     if (A*D == B*C) {
@@ -134,57 +139,11 @@ CubicCurve leastSquaresFitCurveFixed(QList<QVector2D> points, QList<float> t) {
     }
 
     for (int i = 0; i < points.size(); i++) {
+        float w = importanceWeight(t[i]);
         double B[4] = { qPow(1-t[i], 3), 3*qPow(1-t[i], 2)*t[i], 3*(1-t[i])*qPow(t[i], 2), qPow(t[i], 3) };
         for (int j = 0; j < 2; j++) {
-            xMatrix(j, 0) += B[j+1] * points[i].x() - B[0] * B[j+1] * points[0].x() - B[3] * B[j+1] * points[last].x();
-            yMatrix(j, 0) += B[j+1] * points[i].y() - B[0] * B[j+1] * points[0].y() - B[3] * B[j+1] * points[last].y();
-        }
-    }
-
-    QGenericMatrix<1, 2, float> xCM = tMatrixT*xMatrix;
-    QGenericMatrix<1, 2, float> yCM = tMatrixT*yMatrix;
-
-    return CubicCurve(points[0], QVector2D(xCM(0, 0), yCM(0, 0)),
-                      QVector2D(xCM(1, 0), yCM(1, 0)), points[last]);
-}
-
-CubicCurve leastSquaresFitCurveFixedIgnoringLastFive(QList<QVector2D> points, QList<float> t) {
-    int realLast = points.size()-1;
-    int last = points.size() < 5 ? points.size()-1 : points.size() < 15 ? points.size()-1-(points.size()-5)/2 : points.size()-1-5;
-    // qDebug() << realLast << last;
-
-    float A = 0, B = 0, C = 0, D = 0;
-    for (int i = 0; i <= last; i++) {
-        double Bs[4] = { qPow(1-t[i], 3), 3*qPow(1-t[i], 2)*t[i], 3*(1-t[i])*qPow(t[i], 2), qPow(t[i], 3) };
-        A += Bs[1]*Bs[1];
-        B += Bs[1]*Bs[2];
-        C += Bs[2]*Bs[1];
-        D += Bs[2]*Bs[2];
-    }
-
-    if (A*D == B*C) {
-        qDebug() << "failed to fit. is it even possible?";
-        return CubicCurve::fromLine(points[0], points[last]);
-    }
-
-    QGenericMatrix<2, 2, float> tMatrixT;
-    tMatrixT(0, 0) = D/(A*D-B*C);
-    tMatrixT(0, 1) = -B/(A*D-B*C);
-    tMatrixT(1, 0) = -C/(A*D-B*C);
-    tMatrixT(1, 1) = A/(A*D-B*C);
-
-    QGenericMatrix<1, 2, float> xMatrix;
-    QGenericMatrix<1, 2, float> yMatrix;
-    for (int i = 0; i < 2; i++) {
-        xMatrix(i, 0) = 0;
-        yMatrix(i, 0) = 0;
-    }
-
-    for (int i = 0; i <= last; i++) {
-        double B[4] = { qPow(1-t[i], 3), 3*qPow(1-t[i], 2)*t[i], 3*(1-t[i])*qPow(t[i], 2), qPow(t[i], 3) };
-        for (int j = 0; j < 2; j++) {
-            xMatrix(j, 0) += B[j+1] * points[i].x() - B[0] * B[j+1] * points[0].x() - B[3] * B[j+1] * points[last].x();
-            yMatrix(j, 0) += B[j+1] * points[i].y() - B[0] * B[j+1] * points[0].y() - B[3] * B[j+1] * points[last].y();
+            xMatrix(j, 0) += w * (B[j+1] * points[i].x() - B[0] * B[j+1] * points[0].x() - B[3] * B[j+1] * points[last].x());
+            yMatrix(j, 0) += w * (B[j+1] * points[i].y() - B[0] * B[j+1] * points[0].y() - B[3] * B[j+1] * points[last].y());
         }
     }
 
@@ -231,6 +190,9 @@ void CurvePenTool::mousePress(QVector2D position)
 
 void CurvePenTool::mouseMove(QVector2D position)
 {
+    if (m_points.last().distanceToPoint(position) < 0.5)
+        return;
+
     m_points << position;
 
     if (m_points.size() < 4)
@@ -239,26 +201,14 @@ void CurvePenTool::mouseMove(QVector2D position)
     QList<float> Ts(m_points.size());
     Ts[0] = 0;
     for (int i = 1; i < m_points.size(); i++) {
-        Ts[i] = Ts[i-1] + m_points[i-1].distanceToPoint(m_points[i]);
+        Ts[i] = Ts[i-1] + qSqrt(m_points[i-1].distanceToPoint(m_points[i]));
     }
     for (int i = 1; i < m_points.size(); i++) {
         Ts[i] /= Ts.last();
     }
 
     CubicCurve curve = leastSquaresFitCurveFixed(m_points, Ts);
-    // int aheadPoints = m_points.size() < 5 ? 0 : m_points.size() < 15 ? (m_points.size()-5)/2 : 5;
-    // bool errorGrows = aheadPoints > 4;
-    // for (int i = m_points.size()-aheadPoints; i < m_points.size() && errorGrows; i++)
-    //     errorGrows = curve[Ts[i-1]].distanceToPoint(m_points[i-1]) < curve[Ts[i]].distanceToPoint(m_points[i]);
-    // if (errorGrows && curve[Ts[m_points.size()-1]].distanceToPoint(m_points[m_points.size()-1]) > 15/m_canvas->scale()) {
-    //     for (int i = 0; i < aheadPoints+2; i++)
-    //         m_points[i] = m_points[m_points.size()-aheadPoints-2+i];
-    //     // m_points[0] = m_points[m_points.size()-2];
-    //     // m_points[1] = m_points[m_points.size()-1];
-    //     m_points.resize(aheadPoints+2);
-    //     m_segment = nullptr;
-    //     return;
-    // }
+
     double maxError = computeMaxError(m_points, Ts, curve);
     if (maxError > 10/m_canvas->scale()) {
         qDebug() << "break";
@@ -268,7 +218,7 @@ void CurvePenTool::mouseMove(QVector2D position)
         m_segment = nullptr;
         return;
     }
-    // qDebug() << maxError;
+
     std::pair<double, int> maxAngleError = computeMaxAngleError(m_points, Ts, curve);
     if (maxAngleError.first > 0.75 && maxAngleError.second > 4 && m_segment) {
         qDebug() << "break at" << maxAngleError.second << "/" << m_points.size();
@@ -286,32 +236,12 @@ void CurvePenTool::mouseMove(QVector2D position)
         m_segment = nullptr;
         return;
     }
-    // if (m_points.size() >= 7) {
-    //     QList firstPoints = m_points.first(m_points.size()-4+1);
-    //     CubicCurve firstCurve = leastSquaresFitCurveFixed(firstPoints, Ts);
-    //     QList lastTs = Ts.last(4);
-    //     QList lastPoints = m_points.last(4);
-    //     CubicCurve lastCurve = leastSquaresFitCurveFixed(lastPoints, lastTs);
-    //     if (angleBetweenVectors(firstCurve.d-firstCurve.c, lastCurve.b-lastCurve.a) < 0.001) {
-    //         qDebug() << (firstCurve.d-firstCurve.c).normalized() << (lastCurve.b-lastCurve.a).normalized() << angleBetweenVectors(firstCurve.d-firstCurve.c, lastCurve.b-lastCurve.a);
-    //         m_segment->relB = firstCurve.b-firstCurve.a;
-    //         m_segment->relC = firstCurve.c-firstCurve.a;
-    //         m_segment->relD = firstCurve.d-firstCurve.a;
-
-    //         int newCurvePointsCount = 4;
-    //         for (int i = 0; i < newCurvePointsCount; i++)
-    //             m_points[i] = m_points[m_points.size()-newCurvePointsCount+i];
-    //         m_points.resize(newCurvePointsCount);
-    //         m_segment = nullptr;
-    //         return;
-    //     }
-    // }
 
     if (!m_segment) {
         m_segment = new VectorPath::CubicCurveSegment({}, {}, {});
         m_pathItem->segments << m_segment;
     }
-    // m_pathItem->startPoint = curve[0];
+
     m_segment->b = curve.b;
     m_segment->c = curve.c;
     m_segment->d = curve.d;
