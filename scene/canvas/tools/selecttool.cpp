@@ -24,6 +24,10 @@ SelectTool::SelectTool(Canvas *canvas)
 void SelectTool::mousePress(QVector2D position) {
     m_firstPoint = position;
     m_secondPoint = position;
+    if (m_item) {
+        m_canvas->currentScene()->removeItem(m_item);
+        delete m_item;
+    }
     m_item = new VectorPathSceneItem(position, {new VectorPath::LineSegment(position),
                                                 new VectorPath::LineSegment(position),
                                                 new VectorPath::LineSegment(position),
@@ -204,7 +208,12 @@ void SelectTool::mouseRelease() {
     }
 
     exportData(selectedItems);
+}
 
-    m_canvas->currentScene()->removeItem(m_item);
-    delete m_item;
+void SelectTool::toolDeactivated() {
+    if (m_item) {
+        m_canvas->currentScene()->removeItem(m_item);
+        delete m_item;
+        m_item = nullptr;
+    }
 }

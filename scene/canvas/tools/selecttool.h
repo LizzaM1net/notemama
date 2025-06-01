@@ -18,6 +18,8 @@ public:
     void extracted(VectorPathSceneItem *&pathItem);
     void mouseRelease() override;
 
+    void toolDeactivated() override;
+
 private:
     VectorPathSceneItem *m_item = nullptr;
     QVector2D m_firstPoint;

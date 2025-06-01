@@ -23,7 +23,7 @@ Canvas::Canvas()
     m_tools << new CurvePenTool(this);
     m_tools << new FakeDrawTool(this, m_tools.last());
     m_tools << new SelectTool(this);
-    m_currentTool = m_tools.first();
+    setCurrentTool(m_tools.first());
     emit toolsChanged();
 }
 
@@ -152,6 +152,12 @@ Tool *Canvas::currentTool() {
 void Canvas::setCurrentTool(Tool *currentTool) {
     if (m_currentTool == currentTool)
         return;
+
+    if (m_currentTool)
+        m_currentTool->toolDeactivated();
+
+    if (currentTool)
+        currentTool->toolActivated();
 
     m_currentTool = currentTool;
     emit currentToolChanged();

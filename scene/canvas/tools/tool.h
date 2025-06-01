@@ -25,6 +25,9 @@ public:
     virtual void mouseMove(QVector2D position) = 0;
     virtual void mouseRelease() = 0;
 
+    virtual void toolActivated() {}
+    virtual void toolDeactivated() {}
+
 protected:
     Canvas *m_canvas = nullptr;
 };
