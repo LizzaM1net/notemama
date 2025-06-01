@@ -39,6 +39,54 @@ struct CubicCurve {
     }
 };
 
+// hugs to https://iquilezles.org/articles/bezierbbox/
+QRectF bboxBezier(CubicCurve curve)
+{
+    QVector2D mi(qMin(curve.a.x(), curve.d.x()), qMin(curve.a.y(), curve.d.y()));
+    QVector2D ma(qMax(curve.a.x(), curve.d.x()), qMax(curve.a.y(), curve.d.y()));
+
+    QVector2D c = -1.0*curve.a + 1.0*curve.b;
+    QVector2D b =  1.0*curve.a - 2.0*curve.b + 1.0*curve.c;
+    QVector2D a = -1.0*curve.a + 3.0*curve.b - 3.0*curve.c + 1.0*curve.d;
+
+    QVector2D h = b*b - a*c;
+
+    if (h.x() > 0.0) {
+        h.setX(qSqrt(h.x()));
+        float t = (-b.x() - h.x())/a.x();
+        if (t > 0.0 && t < 1.0) {
+            float s = 1.0-t;
+            float q = curve[t].x();
+            mi.setX(qMin(mi.x(),q));
+            ma.setX(qMax(ma.x(),q));
+        }
+        t = (-b.x() + h.x())/a.x();
+        if (t > 0.0 && t < 1.0) {
+            float q = curve[t].x();
+            mi.setX(qMin(mi.x(),q));
+            ma.setX(qMax(ma.x(),q));
+        }
+    }
+
+    if (h.y() > 0.0) {
+        h.setY(qSqrt(h.y()));
+        float t = (-b.y() - h.y())/a.y();
+        if (t > 0.0 && t < 1.0) {
+            float q = curve[t].y();
+            mi.setY(qMin(mi.y(),q));
+            ma.setY(qMax(ma.y(),q));
+        }
+        t = (-b.y() + h.y())/a.y();
+        if (t > 0.0 && t < 1.0) {
+            float q = curve[t].y();
+            mi.setY(qMin(mi.y(),q));
+            ma.setY(qMax(ma.y(),q));
+        }
+    }
+
+    return QRectF(mi.toPointF(), ma.toPointF());
+}
+
 float angleBetweenVectors(QVector2D v1, QVector2D v2) {
     if (v1.isNull() || v2.isNull())
         return 0;
@@ -212,6 +260,7 @@ void CurvePenTool::mouseMove(QVector2D position)
     double maxError = computeMaxError(m_points, Ts, curve);
     if (maxError > 10/m_canvas->scale()) {
         qDebug() << "break";
+        m_pathItem->m_boundingRect = m_pathItem->m_boundingRect.united(bboxBezier(curve));
         m_points[0] = m_points[m_points.size()-2];
         m_points[1] = m_points[m_points.size()-1];
         m_points.resize(2);
@@ -222,12 +271,13 @@ void CurvePenTool::mouseMove(QVector2D position)
     std::pair<double, int> maxAngleError = computeMaxAngleError(m_points, Ts, curve);
     if (maxAngleError.first > 0.75 && maxAngleError.second > 4 && m_segment) {
         qDebug() << "break at" << maxAngleError.second << "/" << m_points.size();
+        m_pathItem->m_boundingRect = m_pathItem->m_boundingRect.united(bboxBezier(curve));
         QList firstPart = m_points.first(maxAngleError.second+1);
         CubicCurve curve = leastSquaresFitCurveFixed(firstPart, Ts);
         m_segment->b = curve.b;
         m_segment->c = curve.c;
         m_segment->d = curve.d;
-        qDebug() << curve.a << curve.b << curve.c << curve.d;
+        // qDebug() << curve.a << curve.b << curve.c << curve.d;
 
         int newCurvePointsCount = m_points.size()-maxAngleError.second+1;
         for (int i = 0; i < newCurvePointsCount; i++)
@@ -250,7 +300,11 @@ void CurvePenTool::mouseMove(QVector2D position)
 
 void CurvePenTool::mouseRelease()
 {
-    qDebug() << m_pathItem->segments.size();
+    QVector2D startPoint = m_pathItem->startPoint;
+    if (m_pathItem->segments.size() > 1)
+        startPoint = m_pathItem->segments[m_pathItem->segments.size()-2]->lastPoint();
+    CubicCurve curve(startPoint, m_segment->b, m_segment->c, m_segment->d);
+    m_pathItem->m_boundingRect = m_pathItem->m_boundingRect.united(bboxBezier(curve));
     m_points.clear();
     m_segment = nullptr;
     m_pathItem = nullptr;

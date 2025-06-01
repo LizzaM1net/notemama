@@ -87,6 +87,7 @@ namespace VectorPath {
 
 class VectorPathSceneItem : public SceneItem
 {
+    friend class CurvePenTool;
 public:
     VectorPathSceneItem(QVector2D startPoint, QList<VectorPath::Segment*> segments, float lineWidth = 1);
     ~VectorPathSceneItem();
@@ -105,6 +106,7 @@ private:
     QList<ColorVector2D> generateVertices();
 
     QRhiBuffer *m_buffer = nullptr;
+    QRectF m_boundingRect;
     int m_verticesCount = 0;
 };
 

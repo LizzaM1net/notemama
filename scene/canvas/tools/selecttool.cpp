@@ -186,26 +186,25 @@ void exportData(QList<VectorPathSceneItem*> items) {
 
 void SelectTool::mouseRelease() {
     QList<VectorPathSceneItem*> selectedItems;
+    QRectF rect = QRectF(m_firstPoint.toPointF(), m_secondPoint.toPointF()).normalized();
+    QRectF tightenRect;
     for (SceneItem *item : std::as_const(m_canvas->currentScene()->items)) {
         if (item == m_item)
             continue;
 
         if (VectorPathSceneItem *pathItem = dynamic_cast<VectorPathSceneItem*>(item)) {
-            if (!pointInRect(m_firstPoint, m_secondPoint, pathItem->startPoint))
-                continue;
-
-            bool inside = true;
-            for (VectorPath::Segment *seg : std::as_const(pathItem->segments)) {
-                if (!pointInRect(m_firstPoint, m_secondPoint, seg->lastPoint())) {
-                    inside = false;
-                    break;
-                }
-            }
-
-            if (inside)
+            if (rect.contains(item->boundingRect())) {
                 selectedItems << pathItem;
+                tightenRect = tightenRect.united(item->boundingRect());
+            }
         }
     }
+    m_item->startPoint = QVector2D(tightenRect.topLeft());
+    static_cast<VectorPath::LineSegment*>(m_item->segments[0])->end = QVector2D(tightenRect.topRight());
+    static_cast<VectorPath::LineSegment*>(m_item->segments[1])->end = QVector2D(tightenRect.bottomRight());
+    static_cast<VectorPath::LineSegment*>(m_item->segments[2])->end = QVector2D(tightenRect.bottomLeft());
+    static_cast<VectorPath::LineSegment*>(m_item->segments[3])->end = QVector2D(tightenRect.topLeft());
+    m_item->setNeedsSync();
 
     exportData(selectedItems);
 }

@@ -121,7 +121,7 @@ void VectorPathSceneItem::render(QRhiCommandBuffer *cb) {
 }
 
 QRectF VectorPathSceneItem::boundingRect() {
-    return QRect();
+    return m_boundingRect;
 }
 
 QList<ColorVector2D> VectorPathSceneItem::generateVertices() {
