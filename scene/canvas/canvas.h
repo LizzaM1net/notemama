@@ -72,6 +72,7 @@ private slots:
 
 protected:
     void itemChanged(SceneItem *item) override;
+    void itemRemoved(SceneItem *item) override;
 
     QQuickRhiItemRenderer *createRenderer() override;
 

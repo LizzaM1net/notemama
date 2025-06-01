@@ -180,6 +180,10 @@ void Canvas::itemChanged(SceneItem *item) {
     update();
 }
 
+void Canvas::itemRemoved(SceneItem *item) {
+    update();
+}
+
 QQuickRhiItemRenderer *Canvas::createRenderer() {
     return new CanvasRenderer(this, m_scene);
 }

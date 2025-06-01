@@ -50,6 +50,11 @@ void Scene::sendItemChanged(SceneItem *item) {
         observer->itemChanged(item);
 }
 
+void Scene::sendItemRemoved(SceneItem *item) {
+    for (SceneObserver *observer : std::as_const(sceneObservers))
+        observer->itemRemoved(item);
+}
+
 void Scene::addItem(SceneItem *item)
 {
     if (items.contains(item))
@@ -63,4 +68,5 @@ void Scene::removeItem(SceneItem *item)
 {
     item->setScene(nullptr);
     items.removeOne(item);
+    sendItemRemoved(item);
 }

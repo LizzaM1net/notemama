@@ -15,6 +15,7 @@ public:
 
 protected:
     virtual void itemChanged(SceneItem *item) = 0;
+    virtual void itemRemoved(SceneItem *item) = 0;
 
     void addObservedScene(Scene *scene);
     void removeObservedScene(Scene *scene);
@@ -38,6 +39,7 @@ public:
     void removeItem(SceneItem *item);
 
     void sendItemChanged(SceneItem *item);
+    void sendItemRemoved(SceneItem *item);
 
     QList<SceneItem*> items;
 
