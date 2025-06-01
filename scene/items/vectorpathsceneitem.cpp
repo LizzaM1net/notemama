@@ -87,9 +87,10 @@ QVector2D VectorPath::CubicCurveSegment::outTangent(QVector2D startPoint) const 
     return (d-c).normalized();
 }
 
-VectorPathSceneItem::VectorPathSceneItem(QVector2D startPoint, QList<VectorPath::Segment *> segments)
+VectorPathSceneItem::VectorPathSceneItem(QVector2D startPoint, QList<VectorPath::Segment *> segments, float lineWidth)
     : startPoint(startPoint)
-    , segments(segments) {}
+    , segments(segments)
+    , lineWidth(lineWidth) {}
 
 VectorPathSceneItem::~VectorPathSceneItem() {
     qDeleteAll(segments);
@@ -123,8 +124,7 @@ QRectF VectorPathSceneItem::boundingRect() {
     return QRect();
 }
 
-QList<ColorVector2D> VectorPathSceneItem::generateVertices()
-{
+QList<ColorVector2D> VectorPathSceneItem::generateVertices() {
     QList<ColorVector2D> points;
     QVector2D point = startPoint;
     QVector2D prevOutTangent;
@@ -135,20 +135,21 @@ QList<ColorVector2D> VectorPathSceneItem::generateVertices()
         float dot = QVector2D::dotProduct(tangent, segment->inTangent(point));
         if (qFuzzyIsNull(dot))
             continue;
-        dot = qMax(dot, 4*m_lineWidth);
+
+        dot = qBound(0.25, dot, 1.);
         normal /= dot;
 
-        points << ColorVector2D(point, Qt::white) - m_lineWidth*normal
-               << ColorVector2D(point, Qt::white) + m_lineWidth*normal;
+        points << ColorVector2D(point, Qt::white) - lineWidth*normal
+               << ColorVector2D(point, Qt::white) + lineWidth*normal;
 
-        points << segment->generateVertices(point, m_lineWidth);
+        points << segment->generateVertices(point, lineWidth);
         prevOutTangent = segment->outTangent(point);
         point = segment->lastPoint();
     }
     // curve end
     QVector2D tangent = (prevOutTangent).normalized();
     QVector2D normal(tangent.y(), -tangent.x());
-    points << ColorVector2D(point, Qt::black) - m_lineWidth*normal
-           << ColorVector2D(point, Qt::black) + m_lineWidth*normal;
+    points << ColorVector2D(point, Qt::black) - lineWidth*normal
+           << ColorVector2D(point, Qt::black) + lineWidth*normal;
     return points;
 }

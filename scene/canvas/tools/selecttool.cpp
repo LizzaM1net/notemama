@@ -31,7 +31,7 @@ void SelectTool::mousePress(QVector2D position) {
     m_item = new VectorPathSceneItem(position, {new VectorPath::LineSegment(position),
                                                 new VectorPath::LineSegment(position),
                                                 new VectorPath::LineSegment(position),
-                                                new VectorPath::LineSegment(position)});
+                                                new VectorPath::LineSegment(position)}, 1);
     m_canvas->currentScene()->addItem(m_item);
 }
 

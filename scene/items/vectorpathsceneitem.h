@@ -88,7 +88,7 @@ namespace VectorPath {
 class VectorPathSceneItem : public SceneItem
 {
 public:
-    VectorPathSceneItem(QVector2D startPoint, QList<VectorPath::Segment*> segments);
+    VectorPathSceneItem(QVector2D startPoint, QList<VectorPath::Segment*> segments, float lineWidth = 1);
     ~VectorPathSceneItem();
 
     void synchronize(QRhi *rhi, QRhiResourceUpdateBatch *updateBatch) override;
@@ -99,10 +99,10 @@ public:
     QVector2D startPoint;
     QList<VectorPath::Segment*> segments;
 
+    float lineWidth;
+
 private:
     QList<ColorVector2D> generateVertices();
-
-    float m_lineWidth = 1;
 
     QRhiBuffer *m_buffer = nullptr;
     int m_verticesCount = 0;
